@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  initAudio, 
-  startBackgroundAmbience, 
-  startTelemetryBeacon, 
-  playDialogueBlip, 
-  playAttackSound, 
-  playCritSound, 
+import {
+  initAudio,
+  startBackgroundAmbience,
+  startTelemetryBeacon,
+  playDialogueBlip,
+  playAttackSound,
+  playCritSound,
   playCounterSound,
   triggerDivergenceAudio
 } from './audio';
@@ -19,7 +19,7 @@ const TURNS = [
     announce: 'NORDEN invokes LABORATORY PERFECTION!',
     lines: [
       { speaker: 'GENERAL', text: 'The Sphere of Annihilation. You told me radar interference was a solvable edge case, Norden.' },
-      { speaker: 'NORDEN',  text: 'In controlled conditions it performed flawlessly. The laboratory data was unambiguous.' },
+      { speaker: 'NORDEN', text: 'In controlled conditions it performed flawlessly. The laboratory data was unambiguous.' },
       { speaker: 'GENERAL', text: "The Fleet wasn't a laboratory. It was a war." },
     ],
   },
@@ -28,7 +28,7 @@ const TURNS = [
     announce: 'GENERAL cites SYSTEMIC BLOAT!',
     lines: [
       { speaker: 'GENERAL', text: 'Five hundred technicians per Battle Analyzer. Ten percent nervous breakdown rate. Per deployment.' },
-      { speaker: 'NORDEN',  text: 'The performance gains justified the support overhead. The math is quite clear.' },
+      { speaker: 'NORDEN', text: 'The performance gains justified the support overhead. The math is quite clear.' },
       { speaker: 'GENERAL', text: "The math doesn't account for the man who collapses at the console." },
     ],
   },
@@ -36,9 +36,9 @@ const TURNS = [
     id: 3,
     announce: 'NORDEN reframes HYSTERESIS!',
     lines: [
-      { speaker: 'NORDEN',  text: 'The Exponential Field was our most elegant solution—' },
+      { speaker: 'NORDEN', text: 'The Exponential Field was our most elegant solution—' },
       { speaker: 'GENERAL', text: 'It left every ship permanently altered. They could never return to their original state, Norden. Never.' },
-      { speaker: 'NORDEN',  text: 'A minor hysteretic residue. Theoretically manageable.' },
+      { speaker: 'NORDEN', text: 'A minor hysteretic residue. Theoretically manageable.' },
       { speaker: 'GENERAL', text: "There is nothing theoretical about a ship that no longer knows what it is." },
     ],
   },
@@ -47,7 +47,7 @@ const TURNS = [
     announce: 'GENERAL demands INTEROPERABILITY!',
     lines: [
       { speaker: 'GENERAL', text: "By the end, the nuts and bolts weren't interchangeable between ships. You understand what that means?" },
-      { speaker: 'NORDEN',  text: 'Specialisation is the price of advancement—' },
+      { speaker: 'NORDEN', text: 'Specialisation is the price of advancement—' },
       { speaker: 'GENERAL', text: "It means the Fleet could no longer fix itself. You optimised us into paralysis." },
     ],
   },
@@ -56,9 +56,9 @@ const TURNS = [
     announce: 'FATAL HYSTERESIS ERROR.',
     lines: [
       { speaker: 'GENERAL', text: "I've asked to be moved to a different cell. They refused." },
-      { speaker: 'NORDEN',  text: 'I... I see... see... the var... the variables...' },
+      { speaker: 'NORDEN', text: 'I... I see... see... the var... the variables...' },
       { speaker: 'GENERAL', text: 'We built something that defeated us more completely than the enemy ever could. And now we share a room.' },
-      { speaker: 'NORDEN',  text: 'The math... mathematics... the model is... is... [SYSTEMIC COLLAPSE]' },
+      { speaker: 'NORDEN', text: 'The math... mathematics... the model is... is... [SYSTEMIC COLLAPSE]' },
     ],
   },
 ];
@@ -85,42 +85,42 @@ const GENERAL_MOVE_LINES = {
 
 const NORDEN_COUNTERS = {
   tl: {
-    hit: { callout: 'NORDEN responds with THEORETICAL PURITY!',  line: 'NORDEN: The laboratory data was unambiguous. Look at the Manhattan Project—operational anomalies will always exist, but the core physics remain unassailable. The environment is simply non-compliant.' },
-    deflect: { callout: 'NORDEN deploys STATISTICAL DEFENSE!',        line: 'NORDEN: Casualty rates were within documented stress parameters. Our early analog computers correctly modeled this human variance. It is a known, acceptable constant.' },
+    hit: { callout: 'NORDEN responds with THEORETICAL PURITY!', line: 'NORDEN: The laboratory data was unambiguous. Look at the Manhattan Project—operational anomalies will always exist, but the core physics remain unassailable. The environment is simply non-compliant.' },
+    deflect: { callout: 'NORDEN deploys STATISTICAL DEFENSE!', line: 'NORDEN: Casualty rates were within documented stress parameters. Our early analog computers correctly modeled this human variance. It is a known, acceptable constant.' },
   },
   tr: {
-    hit: { callout: 'NORDEN invokes LABORATORY SUPERIORITY!',    line: 'NORDEN: Even the early V2 programs had their aerodynamic friction, General. We have moved past such primitive constraints. Friction disappears at sufficient technological advantage.' },
-    deflect: { callout: 'NORDEN deploys ADVANCEMENT LOGIC!',          line: 'NORDEN: Transitional friction is the standard cost of any advance. The alternative is permanent stagnation. We cannot build the future using legacy combustion paradigms.' },
+    hit: { callout: 'NORDEN invokes LABORATORY SUPERIORITY!', line: 'NORDEN: Even the early V2 programs had their aerodynamic friction, General. We have moved past such primitive constraints. Friction disappears at sufficient technological advantage.' },
+    deflect: { callout: 'NORDEN deploys ADVANCEMENT LOGIC!', line: 'NORDEN: Transitional friction is the standard cost of any advance. The alternative is permanent stagnation. We cannot build the future using legacy combustion paradigms.' },
   },
   bl: {
-    deflect: { callout: 'NORDEN deploys SPECIALISATION DOCTRINE!',   line: 'NORDEN: Specialisation is the necessary price of peak performance. The French built the Maginot Line for legacy interoperability, and history proved static systems fail against hyper-focused advancement.' },
-    hit: { callout: 'NORDEN invokes SCALE THEORY!',               line: 'NORDEN: Field repair is a logistical problem of scale. The first Dreadnoughts couldn\'t dock in standard ports, yet they redefined naval dominance. You are conflating local inconvenience with strategic obsolescence.' },
+    deflect: { callout: 'NORDEN deploys SPECIALISATION DOCTRINE!', line: 'NORDEN: Specialisation is the necessary price of peak performance. The French built the Maginot Line for legacy interoperability, and history proved static systems fail against hyper-focused advancement.' },
+    hit: { callout: 'NORDEN invokes SCALE THEORY!', line: 'NORDEN: Field repair is a logistical problem of scale. The first Dreadnoughts couldn\'t dock in standard ports, yet they redefined naval dominance. You are conflating local inconvenience with strategic obsolescence.' },
   },
   br: {
-    deflect: { callout: 'NORDEN deploys UTILITARIAN CALCULUS!',       line: 'NORDEN: The aggregate strategic outcome is statistically disproportionate to individual incident costs. The mathematics of modern warfare are cold, General, but they are precise.' },
-    hit: { callout: 'NORDEN uses ANALYTICAL FRAMING!',            line: 'NORDEN: Individual human cost is analytically distinct from systemic validity. We are building the ultimate weapon, not a life raft. To conflate the two is an emotional argument, not a strategic one.' },
+    deflect: { callout: 'NORDEN deploys UTILITARIAN CALCULUS!', line: 'NORDEN: The aggregate strategic outcome is statistically disproportionate to individual incident costs. The mathematics of modern warfare are cold, General, but they are precise.' },
+    hit: { callout: 'NORDEN uses ANALYTICAL FRAMING!', line: 'NORDEN: Individual human cost is analytically distinct from systemic validity. We are building the ultimate weapon, not a life raft. To conflate the two is an emotional argument, not a strategic one.' },
   },
 };
 
 // ─── MOVES ────────────────────────────────────────────────────────────────────
 const MOVES = [
-  { slot: 'tl', label: 'Invoke Casualty',  type: 'HUMAN',    callout: 'GENERAL used INVOKE CASUALTY!',   dmg: 18 },
-  { slot: 'tr', label: 'Cite Friction',    type: 'EMPIRICAL', callout: 'GENERAL used CITE FRICTION!',    dmg: 15 },
-  { slot: 'bl', label: 'Demand Interop.',  type: 'SYSTEMIC',  callout: 'GENERAL used DEMAND INTEROP.!',  dmg: 20 },
-  { slot: 'br', label: 'Cite Human Cost',  type: 'ETHICAL',   callout: 'GENERAL used CITE HUMAN COST!',  dmg: 16 },
+  { slot: 'tl', label: 'Invoke Casualty', type: 'HUMAN', callout: 'GENERAL used INVOKE CASUALTY!', dmg: 18 },
+  { slot: 'tr', label: 'Cite Friction', type: 'EMPIRICAL', callout: 'GENERAL used CITE FRICTION!', dmg: 15 },
+  { slot: 'bl', label: 'Demand Interop.', type: 'SYSTEMIC', callout: 'GENERAL used DEMAND INTEROP.!', dmg: 20 },
+  { slot: 'br', label: 'Cite Human Cost', type: 'ETHICAL', callout: 'GENERAL used CITE HUMAN COST!', dmg: 16 },
 ];
 
 const TYPE_COLORS = { HUMAN: '#FF8888', EMPIRICAL: '#88CCFF', SYSTEMIC: '#FFD700', ETHICAL: '#88FF99' };
 
 // ─── TIMING & HP ──────────────────────────────────────────────────────────────
-const TURN_STARTS  = [0, 22, 44, 66, 88];
-const CRASH_START  = 110;
-const BRICK_AT     = 120;
-const TOTAL        = 120;
-const GENERAL_HP   = [100, 82, 65, 43, 18,  0];
+const TURN_STARTS = [0, 22, 44, 66, 88];
+const CRASH_START = 110;
+const BRICK_AT = 120;
+const TOTAL = 120;
+const GENERAL_HP = [100, 82, 65, 43, 18, 0];
 // Norden starts at 100, player attacks chip this down significantly
-const NORDEN_BASE  = [100, 95, 88, 78, 65,  0];
-const TYPE_SPEED   = 18; // ms per character
+const NORDEN_BASE = [100, 95, 88, 78, 65, 0];
+const TYPE_SPEED = 18; // ms per character
 
 // Minimum time (ms) a line stays fully visible before the next step begins
 const READ_PAD = 1800;
@@ -130,12 +130,12 @@ const lineWait = (text) => text.length * TYPE_SPEED + READ_PAD;
 
 // ─── DIVERGENCE GRAPH DATA ────────────────────────────────────────────────────
 const DIV_DATA = [
-  { desc: 'Turn 1 ─ Pure Alignment: Norden is perfectly calm. The laboratory models hold.',                pct: 0   },
-  { desc: 'Turn 2 ─ Mild Discrepancy: Norden feels irritation. He dismisses early friction as user error.', pct: 12  },
-  { desc: 'Turn 3 ─ Hysteretic Strain: Norden grows rigid. He attempts to mathematically force theory over reality.', pct: 33  },
-  { desc: 'Turn 4 ─ Structural Paralysis: Norden is desperate. The system is permanently fractured. He blames the Fleet.', pct: 68  },
-  { desc: 'Turn 5 ─ Cognitive Dissonance: Norden’s composure shatters. The gap exceeds all theoretical capacity.',   pct: 89  },
-  { desc: 'SYSTEM CRASH ─ Total Collapse: Norden\'s mind and the system have fatally diverged.',           pct: 100 },
+  { desc: 'Turn 1 ─ Pure Alignment: Norden is perfectly calm. The laboratory models hold.', pct: 0 },
+  { desc: 'Turn 2 ─ Mild Discrepancy: Norden feels irritation. He dismisses early friction as user error.', pct: 12 },
+  { desc: 'Turn 3 ─ Hysteretic Strain: Norden grows rigid. He attempts to mathematically force theory over reality.', pct: 33 },
+  { desc: 'Turn 4 ─ Structural Paralysis: Norden is desperate. The system is permanently fractured. He blames the Fleet.', pct: 68 },
+  { desc: 'Turn 5 ─ Cognitive Dissonance: Norden’s composure shatters. The gap exceeds all theoretical capacity.', pct: 89 },
+  { desc: 'SYSTEM CRASH ─ Total Collapse: Norden\'s mind and the system have fatally diverged.', pct: 100 },
 ];
 
 // ─── JAIL CELL BACKGROUND — Pokémon-style High Fidelity (Gritty Prison Version) ──
@@ -145,13 +145,13 @@ function drawJailCell(ctx, W, H, decay) {
   ctx.clearRect(0, 0, W, H);
 
   // ── Key geometry ─────────────────────────────────────────────────────────
-  const HORIZ    = Math.round(H * 0.46);  // Lowered horizon further to fix clipping
-  const VPx      = W * 0.5;               // Centered perspective
-  const ta       = Math.max(0.1, 1 - decay * 0.12); // smooth decay attenuation
+  const HORIZ = Math.round(H * 0.46);  // Lowered horizon further to fix clipping
+  const VPx = W * 0.5;               // Centered perspective
+  const ta = Math.max(0.1, 1 - decay * 0.12); // smooth decay attenuation
 
-  const CEIL     = Math.round(H * 0.05);
+  const CEIL = Math.round(H * 0.05);
   const WALL_TOP = CEIL;
-  const LEFT_INSET  = W * 0.06;
+  const LEFT_INSET = W * 0.06;
   const RIGHT_INSET = W * 0.05;
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -167,16 +167,16 @@ function drawJailCell(ctx, W, H, decay) {
   const tL = W * 0.28, tW = W * 0.44;
   ctx.fillStyle = '#08080C';
   ctx.fillRect(tL - 10, 0, tW + 20, CEIL);
-  
+
   // Tube glow
   ctx.fillStyle = `rgba(200, 230, 255, ${ta * 0.8})`;
   ctx.fillRect(tL, 2, tW, CEIL - 2);
 
   // Volumetric cold cone
   const cone = ctx.createRadialGradient(W * 0.5, CEIL, 10, W * 0.5, CEIL, H * 0.7);
-  cone.addColorStop(0,    `rgba(180,220,255,${0.12 * ta})`);
-  cone.addColorStop(0.3,  `rgba(150,190,250,${0.04 * ta})`);
-  cone.addColorStop(1,    'rgba(0,0,0,0)');
+  cone.addColorStop(0, `rgba(180,220,255,${0.12 * ta})`);
+  cone.addColorStop(0.3, `rgba(150,190,250,${0.04 * ta})`);
+  cone.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = cone;
   ctx.fillRect(0, 0, W, H);
 
@@ -184,16 +184,16 @@ function drawJailCell(ctx, W, H, decay) {
   // LAYER 2: BACK WALL — Detailed Concrete Blocks (Cold Version)
   // ═══════════════════════════════════════════════════════════════════════════
   const wallGrd = ctx.createRadialGradient(W * 0.5, HORIZ * 0.5, 20, W * 0.5, HORIZ * 0.5, W * 0.6);
-  wallGrd.addColorStop(0,   '#282A2E');
+  wallGrd.addColorStop(0, '#282A2E');
   wallGrd.addColorStop(0.5, '#1A1C20');
-  wallGrd.addColorStop(1,   '#0C0E12');
+  wallGrd.addColorStop(1, '#0C0E12');
   ctx.fillStyle = wallGrd;
   ctx.fillRect(LEFT_INSET, WALL_TOP, W - LEFT_INSET - RIGHT_INSET, HORIZ - WALL_TOP);
 
-  const wallW  = W - LEFT_INSET - RIGHT_INSET;
-  const wallH  = HORIZ - WALL_TOP;
-  const BW     = Math.floor(wallW / 12);
-  const BH     = Math.floor(wallH / 5);
+  const wallW = W - LEFT_INSET - RIGHT_INSET;
+  const wallH = HORIZ - WALL_TOP;
+  const BW = Math.floor(wallW / 12);
+  const BH = Math.floor(wallH / 5);
 
   // Block grid
   for (let r = 0; r < 6; r++) {
@@ -202,7 +202,7 @@ function drawJailCell(ctx, W, H, decay) {
       const noise = ((r * 7 + (c + 5) * 13) % 15);
       const bx = LEFT_INSET + c * BW + xOff + 2;
       const by = WALL_TOP + r * BH + 2;
-      const b  = 30 + noise;
+      const b = 30 + noise;
 
       ctx.fillStyle = `rgb(${b},${b + 2},${b + 5})`;
       ctx.fillRect(bx, by, BW - 4, BH - 4);
@@ -239,10 +239,10 @@ function drawJailCell(ctx, W, H, decay) {
   const wY = WALL_TOP + BH * 0.8;
   const wW = BW * 2.5;
   const wH = BH * 2.2;
-  
+
   ctx.fillStyle = '#06080A'; // recess
   ctx.fillRect(wX - 4, wY - 4, wW + 8, wH + 8);
-  
+
   // Sky
   const skyGrd = ctx.createLinearGradient(wX, wY, wX, wY + wH);
   skyGrd.addColorStop(0, `rgba(40,55,75,${0.2 * ta})`);
@@ -266,11 +266,11 @@ function drawJailCell(ctx, W, H, decay) {
     ctx.fillRect(bx, wY, 4, wH);
     ctx.fillStyle = 'rgba(255,255,255,0.1)';
     ctx.fillRect(bx + 1, wY, 1, wH); // shine
-    
+
     // cast shadow
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
     ctx.beginPath();
-    ctx.moveTo(bx - 2, wY + wH); ctx.lineTo(bx + 3, wY + wH); ctx.lineTo(bx + 3 - (80 - wb*20), H); ctx.lineTo(bx - 2 - (80 - wb*20), H);
+    ctx.moveTo(bx - 2, wY + wH); ctx.lineTo(bx + 3, wY + wH); ctx.lineTo(bx + 3 - (80 - wb * 20), H); ctx.lineTo(bx - 2 - (80 - wb * 20), H);
     ctx.fill();
   }
 
@@ -279,7 +279,7 @@ function drawJailCell(ctx, W, H, decay) {
   // ═══════════════════════════════════════════════════════════════════════════
   ctx.fillStyle = '#101216';
   ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(LEFT_INSET, WALL_TOP); ctx.lineTo(LEFT_INSET, HORIZ); ctx.lineTo(0, H); ctx.fill();
-  
+
   ctx.fillStyle = '#0E1014';
   ctx.beginPath(); ctx.moveTo(W, 0); ctx.lineTo(W - RIGHT_INSET, WALL_TOP); ctx.lineTo(W - RIGHT_INSET, HORIZ); ctx.lineTo(W, H); ctx.fill();
 
@@ -288,13 +288,13 @@ function drawJailCell(ctx, W, H, decay) {
   const cotY = HORIZ - BH * 0.5;
   const cotW = LEFT_INSET + W * 0.15;
   const cotH = BH * 0.4;
-  
+
   ctx.fillStyle = '#16181C';
   ctx.fillRect(cotX, cotY, cotW, 4);        // top rail
   ctx.fillRect(cotX, cotY + cotH, cotW, 4); // bottom rail
   ctx.fillRect(cotX + 4, cotY, 4, cotH + 8); // legs
   ctx.fillRect(cotX + cotW - 6, cotY, 4, cotH + 8);
-  
+
   ctx.fillStyle = '#22262A'; // mattress
   ctx.fillRect(cotX + 8, cotY + 3, cotW - 14, cotH - 2);
   ctx.fillStyle = '#2A2E34'; // pillow
@@ -312,7 +312,7 @@ function drawJailCell(ctx, W, H, decay) {
 
   ctx.strokeStyle = `rgba(100, 120, 140, ${0.1 * ta})`;
   ctx.lineWidth = 2;
-  
+
   // Radial Lines (Floor grooves)
   for (let i = 0; i <= 24; i++) {
     const rx = (i / 24) * W * 4 - W * 1.5;
@@ -337,7 +337,7 @@ function drawJailCell(ctx, W, H, decay) {
   ctx.fillStyle = occ; ctx.fillRect(0, HORIZ, W, 30);
 
   // Vignette for depth
-  const vignette = ctx.createRadialGradient(W*0.5, H*0.6, H*0.2, W*0.5, H*0.6, W*0.8);
+  const vignette = ctx.createRadialGradient(W * 0.5, H * 0.6, H * 0.2, W * 0.5, H * 0.6, W * 0.8);
   vignette.addColorStop(0, 'transparent');
   vignette.addColorStop(1, 'rgba(0,0,0,0.7)');
   ctx.fillStyle = vignette;
@@ -348,7 +348,7 @@ function drawJailCell(ctx, W, H, decay) {
   // ═══════════════════════════════════════════════════════════════════════════
   // Far platform (Norden) - High right
   drawPlatform(ctx, W * 0.58, H * 0.50, W * 0.32, H * 0.05, decay, 'far', ta);
-  
+
   // Near platform (General) - Low left, massive
   drawPlatform(ctx, -W * 0.08, H * 0.84, W * 0.58, H * 0.08, decay, 'near', ta);
 
@@ -361,13 +361,13 @@ function drawJailCell(ctx, W, H, decay) {
     ctx.globalCompositeOperation = 'overlay';
     ctx.fillRect(0, 0, W, H);
     ctx.globalCompositeOperation = 'source-over';
-    
+
     // Falling digital ash / fragmentation
     ctx.fillStyle = `rgba(255, 107, 0, ${decAlpha * 2})`;
-    for(let p=0; p<30; p++) {
+    for (let p = 0; p < 30; p++) {
       const px = (p * 57 + (Date.now() / 15)) % W;
       const py = (p * 83 + (Date.now() / 20)) % H;
-      ctx.fillRect(px, py, (p%3)+1, (p%4)+1);
+      ctx.fillRect(px, py, (p % 3) + 1, (p % 4) + 1);
     }
   }
 }
@@ -375,12 +375,12 @@ function drawJailCell(ctx, W, H, decay) {
 // ── Sleek, Geometric Pokémon-style Battle Platform
 function drawPlatform(ctx, x, y, w, h, decay, type, ta) {
   const isFar = type === 'far';
-  const rimH  = h;
-  
+  const rimH = h;
+
   // Base shadow cast on floor
   ctx.fillStyle = 'rgba(0,0,0,0.5)';
   ctx.beginPath();
-  ctx.ellipse(x + w/2, y + rimH/2 + 8, w/2 + 4, h*1.2, 0, 0, Math.PI*2);
+  ctx.ellipse(x + w / 2, y + rimH / 2 + 8, w / 2 + 4, h * 1.2, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Cylinder/Rim (Front face of the disc)
@@ -389,43 +389,43 @@ function drawPlatform(ctx, x, y, w, h, decay, type, ta) {
   rimGrd.addColorStop(0.5, isFar ? '#121518' : '#1A1D20');
   rimGrd.addColorStop(1, '#06080A');
   ctx.fillStyle = rimGrd;
-  
+
   // Draw thick extruded ellipse
   ctx.beginPath();
-  ctx.ellipse(x + w/2, y, w/2, h, 0, Math.PI, 0, true); // top half
+  ctx.ellipse(x + w / 2, y, w / 2, h, 0, Math.PI, 0, true); // top half
   ctx.lineTo(x + w, y + rimH);
-  ctx.ellipse(x + w/2, y + rimH, w/2, h, 0, 0, Math.PI, false); // bottom half
+  ctx.ellipse(x + w / 2, y + rimH, w / 2, h, 0, 0, Math.PI, false); // bottom half
   ctx.lineTo(x, y);
   ctx.fill();
 
   // Top Surface (where character stands)
-  const topGrd = ctx.createLinearGradient(x, y-h, x, y+h);
+  const topGrd = ctx.createLinearGradient(x, y - h, x, y + h);
   topGrd.addColorStop(0, isFar ? '#30363C' : '#3A4046');
   topGrd.addColorStop(1, isFar ? '#181C20' : '#22262A');
   ctx.fillStyle = topGrd;
   ctx.beginPath();
-  ctx.ellipse(x + w/2, y, w/2, h, 0, 0, Math.PI*2);
+  ctx.ellipse(x + w / 2, y, w / 2, h, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Edge Highlighter (The glowing rim characteristic of Pokemon stands)
   ctx.strokeStyle = isFar ? `rgba(157, 0, 255, ${0.4 * ta})` : `rgba(0, 255, 178, ${0.4 * ta})`;
   ctx.lineWidth = isFar ? 2 : 3;
   ctx.beginPath();
-  ctx.ellipse(x + w/2, y, w/2 - 2, h - 2, 0, 0, Math.PI*2);
+  ctx.ellipse(x + w / 2, y, w / 2 - 2, h - 2, 0, 0, Math.PI * 2);
   ctx.stroke();
 
   // Inner geometric detail line
   ctx.strokeStyle = 'rgba(0,0,0,0.4)';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.ellipse(x + w/2, y, w/2 - 12, h - 8, 0, 0, Math.PI*2);
+  ctx.ellipse(x + w / 2, y, w / 2 - 12, h - 8, 0, 0, Math.PI * 2);
   ctx.stroke();
 
   // Decay overlay
   if (decay >= 3) {
-    ctx.fillStyle = `rgba(255,0,0,${(decay-2)*0.08})`;
+    ctx.fillStyle = `rgba(255,0,0,${(decay - 2) * 0.08})`;
     ctx.beginPath();
-    ctx.ellipse(x + w/2, y, w/2, h, 0, 0, Math.PI*2);
+    ctx.ellipse(x + w / 2, y, w / 2, h, 0, 0, Math.PI * 2);
     ctx.fill();
   }
 }
@@ -449,7 +449,7 @@ function JailCellBackground({ decay }) {
   return (
     <canvas
       ref={canvasRef}
-      style={{ position:'absolute', inset:0, width:'100%', height:'100%', display:'block', pointerEvents:'none' }}
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block', pointerEvents: 'none' }}
     />
   );
 }
@@ -495,14 +495,14 @@ function GameOverScreen({ score }) {
       <AnimatePresence>
         {phase >= 1 && (
           <motion.div className="go-header" key="go-header"
-            initial={{ opacity:0, y:-18 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6 }}>
+            initial={{ opacity: 0, y: -18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <div className="go-title">SYSTEMIC OVERLOAD</div>
             <div className="go-subtitle">SYSTEMIC DIVERGENCE : TERMINAL STATE</div>
           </motion.div>
         )}
         {phase >= 2 && (
           <motion.p className="go-quote" style={{ fontSize: '1.4rem', lineHeight: '1.6', textAlign: 'center', marginTop: '3rem' }} key="go-quote"
-            initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ duration:0.7 }}>
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7 }}>
             "We replaced imperfect courage with flawless logic.<br />
             If the equations were undeniably perfect...<br />
             Then what exactly was the true cost of our certainty?"
@@ -510,13 +510,13 @@ function GameOverScreen({ score }) {
         )}
         {phase >= 3 && (
           <motion.div className="go-cell-note" style={{ marginTop: '3rem' }} key="go-note"
-            initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ duration:0.5 }}>
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
             [ The cell remains locked. The divergence is permanent. ]
           </motion.div>
         )}
         {phase >= 4 && (
           <motion.div className="go-restart" key="go-restart"
-            initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ duration:0.4, delay:0.9 }}>
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.9 }}>
             Press F5 to attempt reconciliation
           </motion.div>
         )}
@@ -529,10 +529,10 @@ function GameOverScreen({ score }) {
 
 function DivergenceGraph({ turnIdx, elapsed, crashed }) {
   const canvasRef = useRef(null);
-  const frameRef  = useRef(null);
-  const smoothT   = useRef(null);
-  const smoothR   = useRef(null);
-  const elRef     = useRef(elapsed);
+  const frameRef = useRef(null);
+  const smoothT = useRef(null);
+  const smoothR = useRef(null);
+  const elRef = useRef(elapsed);
   useEffect(() => { elRef.current = elapsed; }, [elapsed]);
 
   const draw = useCallback(() => {
@@ -557,17 +557,17 @@ function DivergenceGraph({ turnIdx, elapsed, crashed }) {
 
     if (!crashed) {
       const theoryTarget = mid - Math.sin(t * 0.72) * 14 - (frac * 6);
-      smoothT.current    = smoothT.current * 0.82 + theoryTarget * 0.18;
+      smoothT.current = smoothT.current * 0.82 + theoryTarget * 0.18;
 
       const jitter = Math.max(0, frac - 0.2);
       const offsetAmt = frac * 28; // Reduced to fit inside new 110px constraints comfortably
-      const noiseAmt  = frac * 20 + (Math.random() - 0.5) * jitter * 25;
+      const noiseAmt = frac * 20 + (Math.random() - 0.5) * jitter * 25;
 
       const realityTarget = mid
         + offsetAmt
         + Math.sin(t * 0.72 + (frac * 1.5) * Math.PI) * (14 * (1 - frac * 0.5))
         + (Math.random() - 0.5) * 2 * noiseAmt;
-      
+
       smoothR.current = smoothR.current * 0.82 + realityTarget * 0.18;
 
       const ty = Math.max(2, Math.min(H - 3, Math.round(smoothT.current)));
@@ -611,9 +611,9 @@ function DivergenceGraph({ turnIdx, elapsed, crashed }) {
     return () => cancelAnimationFrame(frameRef.current);
   }, [draw]);
 
-  const di       = crashed ? 5 : Math.min(turnIdx, 4);
-  const divData  = DIV_DATA[di];
-  const rColors  = ['#00FFB2', '#BBFF20', '#FFC400', '#FF6B00', '#FF1744', '#FF1744'];
+  const di = crashed ? 5 : Math.min(turnIdx, 4);
+  const divData = DIV_DATA[di];
+  const rColors = ['#00FFB2', '#BBFF20', '#FFC400', '#FF6B00', '#FF1744', '#FF1744'];
   const pctColor = di < 2 ? '#00FFB2' : di < 4 ? '#FFC400' : '#FF1744';
 
   return (
@@ -669,10 +669,10 @@ function InfoCard({ name, hp, maxHp, level, sub, isEnemy }) {
 // ─── GENERAL — BACK VIEW (High Detail, Gen 5 Pokemon Style) ─────────────────────────────
 
 function GeneralSprite({ decay, attacking, hit }) {
-  const anim   = decay < 2 ? 'breathe 2.5s ease-in-out infinite'
-               : decay === 2 ? 'breatheStutter 2.5s ease-in-out infinite' : 'none';
+  const anim = decay < 2 ? 'breathe 2.5s ease-in-out infinite'
+    : decay === 2 ? 'breatheStutter 2.5s ease-in-out infinite' : 'none';
   const jitter = decay >= 4;
-  const fColor = decay >= 3 ? `rgba(255,107,0,${(decay-2)*0.35})` : 'transparent';
+  const fColor = decay >= 3 ? `rgba(255,107,0,${(decay - 2) * 0.35})` : 'transparent';
   return (
     <motion.svg width="380" height="460" viewBox="0 0 20 28"
       className="pixel-sprite"
@@ -680,47 +680,47 @@ function GeneralSprite({ decay, attacking, hit }) {
         imageRendering: 'pixelated', transformOrigin: 'bottom center',
         animation: jitter ? 'generalJitter 0.09s steps(1) infinite' : anim,
         filter: decay >= 3
-          ? `drop-shadow(0 0 ${(decay-2)*8}px rgba(255,107,0,${(decay-2)*0.6})) contrast(${1.25-decay*0.06})`
+          ? `drop-shadow(0 0 ${(decay - 2) * 8}px rgba(255,107,0,${(decay - 2) * 0.6})) contrast(${1.25 - decay * 0.06})`
           : 'drop-shadow(0 8px 18px rgba(0,0,0,0.85)) drop-shadow(0 2px 4px rgba(0,255,178,0.15))',
       }}
       animate={
-        hit        ? { x: [-12, 12, -8, 8, -5, 0], filter: 'brightness(1.5)' } :
-        attacking  ? { x: [0, 60, 60, 0], scaleX: [1, 1.08, 1.08, 1] } :
-        {}
+        hit ? { x: [-12, 12, -8, 8, -5, 0], filter: 'brightness(1.5)' } :
+          attacking ? { x: [0, 60, 60, 0], scaleX: [1, 1.08, 1.08, 1] } :
+            {}
       }
-      transition={hit ? { duration: 0.4, ease: 'easeOut' } : attacking ? { duration: 0.5, ease: [0.4,0,0.2,1] } : {}}
+      transition={hit ? { duration: 0.4, ease: 'easeOut' } : attacking ? { duration: 0.5, ease: [0.4, 0, 0.2, 1] } : {}}
     >
       {/* Expanded Hat */}
-      <rect x="3" y="0" width="14" height="2" fill="url(#gGold)"/>
-      <rect x="4" y="2" width="12" height="4" fill="#3B4822"/>
-      <rect x="2" y="5" width="16" height="1" fill="#111"/> {/* Hat Brim Wide */}
-      <rect x="2" y="6" width="16" height="1" fill="#000"/> {/* Brim Shadow */}
+      <rect x="3" y="0" width="14" height="2" fill="url(#gGold)" />
+      <rect x="4" y="2" width="12" height="4" fill="#3B4822" />
+      <rect x="2" y="5" width="16" height="1" fill="#111" /> {/* Hat Brim Wide */}
+      <rect x="2" y="6" width="16" height="1" fill="#000" /> {/* Brim Shadow */}
 
       {/* Head/Neck */}
-      <rect x="6" y="7" width="8" height="3" fill="#D6B88C"/>
-      <rect x="6" y="7" width="8" height="1" fill="#8B5A2B"/> {/* Neck Shadow */}
-      <rect x="7" y="10" width="6" height="2" fill="#C4A07A"/>
-      
+      <rect x="6" y="7" width="8" height="3" fill="#D6B88C" />
+      <rect x="6" y="7" width="8" height="1" fill="#8B5A2B" /> {/* Neck Shadow */}
+      <rect x="7" y="10" width="6" height="2" fill="#C4A07A" />
+
       {/* Broad Coat Core */}
-      <rect x="3" y="12" width="14" height="11" fill="url(#gCoat)"/>
-      <rect x="4" y="12" width="1" height="11" fill="#AACC88" opacity="0.3"/> {/* Left edge highlight */}
-      <rect x="9" y="12" width="1" height="11" fill="#0A0A0A" opacity="0.6"/> {/* Deep center fold */}
+      <rect x="3" y="12" width="14" height="11" fill="url(#gCoat)" />
+      <rect x="4" y="12" width="1" height="11" fill="#AACC88" opacity="0.3" /> {/* Left edge highlight */}
+      <rect x="9" y="12" width="1" height="11" fill="#0A0A0A" opacity="0.6" /> {/* Deep center fold */}
 
       {/* Epaulettes - Flashy */}
-      <rect x="1" y="11" width="4" height="3" fill="#3B4822"/>
-      <rect x="1" y="11" width="4" height="1.5" fill="url(#gGold)"/>
-      <rect x="15" y="11" width="4" height="3" fill="#3B4822"/>
-      <rect x="15" y="11" width="4" height="1.5" fill="url(#gGold)"/>
+      <rect x="1" y="11" width="4" height="3" fill="#3B4822" />
+      <rect x="1" y="11" width="4" height="1.5" fill="url(#gGold)" />
+      <rect x="15" y="11" width="4" height="3" fill="#3B4822" />
+      <rect x="15" y="11" width="4" height="1.5" fill="url(#gGold)" />
 
       {/* Thick Arms */}
-      <rect x="1" y="14" width="3" height="7" fill="#405226"/>
-      <rect x="16" y="14" width="3" height="7" fill="#35441E"/>
-      <rect x="1" y="20" width="3" height="1" fill="#222"/>
-      <rect x="16" y="20" width="3" height="1" fill="#222"/>
+      <rect x="1" y="14" width="3" height="7" fill="#405226" />
+      <rect x="16" y="14" width="3" height="7" fill="#35441E" />
+      <rect x="1" y="20" width="3" height="1" fill="#222" />
+      <rect x="16" y="20" width="3" height="1" fill="#222" />
 
       {/* Hands */}
-      <rect x="0.5" y="21" width="3.5" height="2" fill="#D6B88C"/>
-      <rect x="16" y="21" width="3.5" height="2" fill="#D6B88C"/>
+      <rect x="0.5" y="21" width="3.5" height="2" fill="#D6B88C" />
+      <rect x="16" y="21" width="3.5" height="2" fill="#D6B88C" />
 
       {/* Back Half-Belt */}
       <rect x="4" y="22" width="12" height="2" fill="#2A3515" />
@@ -729,16 +729,16 @@ function GeneralSprite({ decay, attacking, hit }) {
       <rect x="9" y="22" width="2" height="2" fill="#111" /> {/* Center stitching shadow */}
 
       {/* Legs & High-Poly Boots */}
-      <rect x="4" y="24" width="5" height="2" fill="#1C2410"/>
-      <rect x="11" y="24" width="5" height="2" fill="#151A08"/>
-      
-      {/* Boots Base */}
-      <rect x="3.5" y="26" width="6" height="2" fill="#0C0A0A"/>
-      <rect x="10.5" y="26" width="6" height="2" fill="#050505"/>
-      <rect x="4.5" y="26" width="2" height="1" fill="#666"/> /* Boot reflection */
-      <rect x="12" y="26" width="2" height="1" fill="#444"/>
+      <rect x="4" y="24" width="5" height="2" fill="#1C2410" />
+      <rect x="11" y="24" width="5" height="2" fill="#151A08" />
 
-      {decay >= 3 && <rect x="18" y="0" width="2" height="28" fill={fColor}/>}
+      {/* Boots Base */}
+      <rect x="3.5" y="26" width="6" height="2" fill="#0C0A0A" />
+      <rect x="10.5" y="26" width="6" height="2" fill="#050505" />
+      <rect x="4.5" y="26" width="2" height="1" fill="#666" /> /* Boot reflection */
+      <rect x="12" y="26" width="2" height="1" fill="#444" />
+
+      {decay >= 3 && <rect x="18" y="0" width="2" height="28" fill={fColor} />}
     </motion.svg>
   );
 }
@@ -752,69 +752,69 @@ function NordenSprite({ decay, hit, nordenAttacking }) {
       className="norden-idle pixel-sprite"
       style={{
         imageRendering: 'pixelated', transformOrigin: 'bottom center',
-        filter: `saturate(${1-desat}) drop-shadow(0 8px 24px rgba(0,0,0,0.95)) drop-shadow(0 0 8px rgba(157,0,255,0.2))`,
+        filter: `saturate(${1 - desat}) drop-shadow(0 8px 24px rgba(0,0,0,0.95)) drop-shadow(0 0 8px rgba(157,0,255,0.2))`,
       }}
       animate={
         nordenAttacking ? { y: [0, 40, 10, 0], scaleY: [1, 0.9, 1.05, 1], filter: 'brightness(1.4)' } :
-        hit             ? { x: [0, -18, 18, -14, 14, -8, 0] } :
-        {}
+          hit ? { x: [0, -18, 18, -14, 14, -8, 0] } :
+            {}
       }
       transition={
         nordenAttacking ? { duration: 0.55, ease: 'easeInOut' } :
-        hit             ? { duration: 0.44, ease: 'easeOut' } :
-        {}
+          hit ? { duration: 0.44, ease: 'easeOut' } :
+            {}
       }
     >
       {/* Crisp Hair */}
-      <rect x="5" y="0" width="8" height="2" fill="#0A0502"/>
-      <rect x="4" y="1" width="2" height="4" fill="#0A0502"/>
-      <rect x="12" y="1" width="2" height="3" fill="#0A0502"/>
-      <rect x="6" y="0" width="2" height="1" fill="#444"/> {/* Hair sheen */}
+      <rect x="5" y="0" width="8" height="2" fill="#0A0502" />
+      <rect x="4" y="1" width="2" height="4" fill="#0A0502" />
+      <rect x="12" y="1" width="2" height="3" fill="#0A0502" />
+      <rect x="6" y="0" width="2" height="1" fill="#444" /> {/* Hair sheen */}
 
       {/* Refined Face */}
-      <rect x="5" y="2" width="8" height="7" fill="#FFE4C4"/>
-      <rect x="5.5" y="8" width="7" height="1" fill="#C4A47A"/> {/* Jaw shadow */}
+      <rect x="5" y="2" width="8" height="7" fill="#FFE4C4" />
+      <rect x="5.5" y="8" width="7" height="1" fill="#C4A47A" /> {/* Jaw shadow */}
 
       {/* Glasses (Neon glow reflection) */}
-      <rect x="5.5" y="3.5" width="3" height="2" fill="none" stroke="#222" strokeWidth="0.5"/>
-      <rect x="9.5" y="3.5" width="3" height="2" fill="none" stroke="#222" strokeWidth="0.5"/>
-      <rect x="8.5" y="4" width="1" height="0.5" fill="#222"/>
-      <rect x="6" y="4" width="1.5" height="1" fill="#00FFB2" opacity="0.3"/> {/* Lab computer reflection */}
-      <rect x="10" y="4" width="1.5" height="1" fill="#00FFB2" opacity="0.3"/>
+      <rect x="5.5" y="3.5" width="3" height="2" fill="none" stroke="#222" strokeWidth="0.5" />
+      <rect x="9.5" y="3.5" width="3" height="2" fill="none" stroke="#222" strokeWidth="0.5" />
+      <rect x="8.5" y="4" width="1" height="0.5" fill="#222" />
+      <rect x="6" y="4" width="1.5" height="1" fill="#00FFB2" opacity="0.3" /> {/* Lab computer reflection */}
+      <rect x="10" y="4" width="1.5" height="1" fill="#00FFB2" opacity="0.3" />
 
       {/* Strict White Collar */}
-      <rect x="6" y="9" width="6" height="2" fill="#FFF"/>
-      <rect x="6" y="10.5" width="6" height="0.5" fill="#CCC"/>
+      <rect x="6" y="9" width="6" height="2" fill="#FFF" />
+      <rect x="6" y="10.5" width="6" height="0.5" fill="#CCC" />
 
       {/* Wide Lab Coat Form */}
-      <rect x="3" y="11" width="12" height="13" fill="url(#nCoat)"/>
-      <rect x="5" y="11" width="0.5" height="13" fill="#777" opacity="0.5"/> /* Folds */
-      <rect x="13" y="11" width="0.5" height="13" fill="#777" opacity="0.5"/>
+      <rect x="3" y="11" width="12" height="13" fill="url(#nCoat)" />
+      <rect x="5" y="11" width="0.5" height="13" fill="#777" opacity="0.5" /> /* Folds */
+      <rect x="13" y="11" width="0.5" height="13" fill="#777" opacity="0.5" />
 
       {/* Bright Purple Tie */}
-      <rect x="8" y="11" width="2" height="9" fill="url(#nTie)"/>
-      <rect x="7.5" y="11" width="3" height="1.5" fill="#B300FF"/> /* Knot */
+      <rect x="8" y="11" width="2" height="9" fill="url(#nTie)" />
+      <rect x="7.5" y="11" width="3" height="1.5" fill="#B300FF" /> /* Knot */
 
       {/* Pocket & Pens */}
-      <rect x="4" y="13" width="2.5" height="3" fill="#F0F0F0"/>
-      <rect x="4.5" y="11.5" width="0.5" height="1.5" fill="#FF0055"/> /* Red pen */
-      <rect x="5.5" y="12" width="0.5" height="1" fill="#222"/> /* Black pen */
+      <rect x="4" y="13" width="2.5" height="3" fill="#F0F0F0" />
+      <rect x="4.5" y="11.5" width="0.5" height="1.5" fill="#FF0055" /> /* Red pen */
+      <rect x="5.5" y="12" width="0.5" height="1" fill="#222" /> /* Black pen */
 
       {/* Arms & Hands */}
-      <rect x="1" y="12" width="2" height="8" fill="#DDD"/>
-      <rect x="15" y="12" width="2" height="8" fill="#CCC"/>
-      <rect x="0.5" y="20" width="2.5" height="2" fill="#FFE4C4"/>
-      <rect x="15" y="20" width="2.5" height="2" fill="#D4B48A"/>
+      <rect x="1" y="12" width="2" height="8" fill="#DDD" />
+      <rect x="15" y="12" width="2" height="8" fill="#CCC" />
+      <rect x="0.5" y="20" width="2.5" height="2" fill="#FFE4C4" />
+      <rect x="15" y="20" width="2.5" height="2" fill="#D4B48A" />
 
       {/* Trousers */}
-      <rect x="5" y="24" width="3.5" height="5" fill="#151515"/>
-      <rect x="9.5" y="24" width="3.5" height="5" fill="#111"/>
+      <rect x="5" y="24" width="3.5" height="5" fill="#151515" />
+      <rect x="9.5" y="24" width="3.5" height="5" fill="#111" />
 
       {/* Pointed Formal Shoes */}
-      <rect x="4.5" y="28" width="4.5" height="2" fill="#050505"/>
-      <rect x="9" y="28" width="4.5" height="2" fill="#000"/>
-      <rect x="5" y="28.5" width="1.5" height="0.5" fill="#FFF" opacity="0.5"/> /* Spitshine */
-      <rect x="10.5" y="28.5" width="1.5" height="0.5" fill="#FFF" opacity="0.5"/>
+      <rect x="4.5" y="28" width="4.5" height="2" fill="#050505" />
+      <rect x="9" y="28" width="4.5" height="2" fill="#000" />
+      <rect x="5" y="28.5" width="1.5" height="0.5" fill="#FFF" opacity="0.5" /> /* Spitshine */
+      <rect x="10.5" y="28.5" width="1.5" height="0.5" fill="#FFF" opacity="0.5" />
 
     </motion.svg>
   );
@@ -823,36 +823,36 @@ function NordenSprite({ decay, hit, nordenAttacking }) {
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [gameStarted,   setGameStarted]   = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
 
   // ── Core narrative state ─────────────────────────────────────────────────
-  const [elapsed,       setElapsed]       = useState(0);
-  const [turnIdx,       setTurnIdx]       = useState(0);
-  const [lineIdx,       setLineIdx]       = useState(0);
-  const [crashed,       setCrashed]       = useState(false);
-  const [bricked,       setBricked]       = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const [turnIdx, setTurnIdx] = useState(0);
+  const [lineIdx, setLineIdx] = useState(0);
+  const [crashed, setCrashed] = useState(false);
+  const [bricked, setBricked] = useState(false);
 
   // ── Combat state ─────────────────────────────────────────────────────────
-  const [usedMoves,     setUsedMoves]     = useState([]);
-  const [moveRound,     setMoveRound]     = useState(0);
-  const [nordenHp,      setNordenHp]      = useState(100);
-  const [generalHp,     setGeneralHp]     = useState(100);
-  const [isInBattle,    setIsInBattle]    = useState(false);
-  const [score,         setScore]         = useState({ general: 0, norden: 0 });
-  const [attacking,     setAttacking]     = useState(false);
-  const [nordenHit,     setNordenHit]     = useState(false);
-  const [nordenAttack,  setNordenAttack]  = useState(false);
-  const [generalHit,    setGeneralHit]    = useState(false);
-  const [arenaShaking,  setArenaShaking]  = useState(false);
-  const [showHitFlash,  setHitFlash]      = useState(false);
-  const [showImpact,    setImpact]        = useState(false);
-  const [showNImpact,   setNImpact]       = useState(false);
+  const [usedMoves, setUsedMoves] = useState([]);
+  const [moveRound, setMoveRound] = useState(0);
+  const [nordenHp, setNordenHp] = useState(100);
+  const [generalHp, setGeneralHp] = useState(100);
+  const [isInBattle, setIsInBattle] = useState(false);
+  const [score, setScore] = useState({ general: 0, norden: 0 });
+  const [attacking, setAttacking] = useState(false);
+  const [nordenHit, setNordenHit] = useState(false);
+  const [nordenAttack, setNordenAttack] = useState(false);
+  const [generalHit, setGeneralHit] = useState(false);
+  const [arenaShaking, setArenaShaking] = useState(false);
+  const [showHitFlash, setHitFlash] = useState(false);
+  const [showImpact, setImpact] = useState(false);
+  const [showNImpact, setNImpact] = useState(false);
   const [floatingTexts, setFloatingTexts] = useState([]);
 
   // ── Dialogue / typewriter ────────────────────────────────────────────────
-  const [displayReq,    setDisplayReq]    = useState({ key: 0, speaker: '', text: '' });
-  const [typedText,     setTypedText]     = useState('');
-  const [typeComplete,  setTypeComplete]  = useState(false);
+  const [displayReq, setDisplayReq] = useState({ key: 0, speaker: '', text: '' });
+  const [typedText, setTypedText] = useState('');
+  const [typeComplete, setTypeComplete] = useState(false);
 
   // ── Audio Triggers ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -860,11 +860,11 @@ export default function App() {
   }, [crashed]);
 
   // ── Refs ─────────────────────────────────────────────────────────────────
-  const startTime      = useRef(null);
-  const prevTurn       = useRef(0);
-  const prevLine       = useRef(0);
-  const seqRef         = useRef({ timers: [], id: 0 });
-  const normalLineRef  = useRef('');
+  const startTime = useRef(null);
+  const prevTurn = useRef(0);
+  const prevLine = useRef(0);
+  const seqRef = useRef({ timers: [], id: 0 });
+  const normalLineRef = useRef('');
 
   // ── showText ─────────────────────────────────────────────────────────────
   const showText = useCallback((speaker, text) => {
@@ -924,7 +924,7 @@ export default function App() {
         prevTurn.current = nt; setTurnIdx(nt); setLineIdx(0); prevLine.current = 0;
       }
       if (e >= CRASH_START) setCrashed(true);
-      if (e >= BRICK_AT)    setBricked(true);
+      if (e >= BRICK_AT) setBricked(true);
     }, 250);
     return () => clearInterval(iv);
   }, [gameStarted]);
@@ -933,7 +933,7 @@ export default function App() {
   useEffect(() => {
     if (!gameStarted) return;
     const tElapsed = elapsed - (TURN_STARTS[turnIdx] ?? 0);
-    const n  = TURNS[Math.min(turnIdx, 4)].lines.length;
+    const n = TURNS[Math.min(turnIdx, 4)].lines.length;
     const nl = Math.min(Math.floor(tElapsed / (22 / n)), n - 1);
     if (nl !== prevLine.current) { prevLine.current = nl; setLineIdx(nl); }
   }, [elapsed, turnIdx, gameStarted]);
@@ -941,7 +941,7 @@ export default function App() {
   // ── Normal dialogue (only when not in a battle sequence) ──────────────────
   useEffect(() => {
     if (!gameStarted || isInBattle) return;
-    const ti   = Math.min(turnIdx, 4);
+    const ti = Math.min(turnIdx, 4);
     const line = TURNS[ti].lines[lineIdx];
     if (!line) return;
     const full = `${line.speaker}: ${line.text}`;
@@ -954,14 +954,14 @@ export default function App() {
   const handleMove = useCallback((move) => {
     if (usedMoves.includes(move.slot) || isInBattle || crashed) return;
 
-    const newUsed    = [...usedMoves, move.slot];
+    const newUsed = [...usedMoves, move.slot];
     const isLastMove = newUsed.length >= MOVES.length;
     setUsedMoves(newUsed);
 
     // ── BALANCED DAMAGE ──────────────────────────────────────────────────
     // Base damage from move + small variance (±3)
     const variance = Math.floor(Math.random() * 7) - 3;
-    let actualDmg  = move.dmg + variance;
+    let actualDmg = move.dmg + variance;
 
     // Critical Hit logic
     const isCrit = Math.random() < 0.15; // 15% chance
@@ -977,17 +977,17 @@ export default function App() {
     actualDmg = won ? actualDmg : Math.floor(actualDmg * 0.4); // deflected hits do 40% damage
     setNordenHp(prev => Math.max(1, prev - actualDmg));
 
-    const r        = moveRound;
-    const genLine  = GENERAL_MOVE_LINES[move.slot][r % GENERAL_MOVE_LINES[move.slot].length];
-    const counter  = won ? NORDEN_COUNTERS[move.slot].hit : NORDEN_COUNTERS[move.slot].deflect;
+    const r = moveRound;
+    const genLine = GENERAL_MOVE_LINES[move.slot][r % GENERAL_MOVE_LINES[move.slot].length];
+    const counter = won ? NORDEN_COUNTERS[move.slot].hit : NORDEN_COUNTERS[move.slot].deflect;
 
     let resultTx;
     if (won) {
-       resultTx = isCrit
-         ? `▲ CRITICAL HIT! — ${actualDmg} DMG. A profound analytical breakthrough rips through the models.`
-         : `▲ EFFECTIVE — ${actualDmg} DMG. The argument lands. Norden's certainty fractures.`;
+      resultTx = isCrit
+        ? `▲ CRITICAL HIT! — ${actualDmg} DMG. A profound analytical breakthrough rips through the models.`
+        : `▲ EFFECTIVE — ${actualDmg} DMG. The argument lands. Norden's certainty fractures.`;
     } else {
-       resultTx = `▼ DEFLECTED — ${actualDmg} DMG. Theory holds firm. The laboratory data is undefeated.`;
+      resultTx = `▼ DEFLECTED — ${actualDmg} DMG. Theory holds firm. The laboratory data is undefeated.`;
     }
 
     // ── TIMING: generous delays so each line can be read ─────────────────
@@ -996,61 +996,67 @@ export default function App() {
 
     runSequence([
       // T+0: Battle callout
-      { delay: 0,     fn: () => { setIsInBattle(true); showText('BATTLE', move.callout); } },
+      { delay: 0, fn: () => { setIsInBattle(true); showText('BATTLE', move.callout); } },
       // T+500: General lunges forward
-      { delay: 500,   fn: () => setAttacking(true) },
+      { delay: 500, fn: () => setAttacking(true) },
       // T+900: Impact on Norden
-      { delay: 900,   fn: () => {
-        setAttacking(false);
-        if (won) { isCrit ? playCritSound() : playAttackSound(); } else { playAttackSound(); }
-        spawnFloatingText(won ? (isCrit ? `CRIT! ${actualDmg}` : `${actualDmg} DMG`) : `DEFLECT: ${actualDmg}`,
-          won ? (isCrit ? 'dmg-crit' : 'dmg-hit') : 'dmg-deflect', 'norden');
-        
-        setNordenHit(true); setArenaShaking(true); setHitFlash(true); setImpact(true);
-        setTimeout(() => { setNordenHit(false); setArenaShaking(false); setHitFlash(false); }, 450);
-        setTimeout(() => setImpact(false), 550);
-      }},
+      {
+        delay: 900, fn: () => {
+          setAttacking(false);
+          if (won) { isCrit ? playCritSound() : playAttackSound(); } else { playAttackSound(); }
+          spawnFloatingText(won ? (isCrit ? `CRIT! ${actualDmg}` : `${actualDmg} DMG`) : `DEFLECT: ${actualDmg}`,
+            won ? (isCrit ? 'dmg-crit' : 'dmg-hit') : 'dmg-deflect', 'norden');
+
+          setNordenHit(true); setArenaShaking(true); setHitFlash(true); setImpact(true);
+          setTimeout(() => { setNordenHit(false); setArenaShaking(false); setHitFlash(false); }, 450);
+          setTimeout(() => setImpact(false), 550);
+        }
+      },
       // T+1200: General's argument line — waits for full type + read time
-      { delay: 1200,  fn: () => showText('GENERAL', genLine) },
+      { delay: 1200, fn: () => showText('GENERAL', genLine) },
       // After reading General's line: Norden counter-attack callout
       { delay: gWait, fn: () => { showText('BATTLE', counter.callout); } },
       // T+800: Norden lunges
-      { delay: 800,   fn: () => { setNordenAttack(true); playCounterSound(); } },
+      { delay: 800, fn: () => { setNordenAttack(true); playCounterSound(); } },
       // T+600: Impact on General
-      { delay: 600,   fn: () => {
-        setNordenAttack(false); setGeneralHit(true); setNImpact(true);
-        const cDmg = won ? 12 : 22;
-        setGeneralHp(prev => Math.max(1, prev - cDmg));
-        spawnFloatingText(won ? `COUNTER: ${cDmg}` : `COUNTER: ${cDmg}`, 'dmg-deflect', 'general');
-        
-        setTimeout(() => { setGeneralHit(false); }, 450);
-        setTimeout(() => setNImpact(false), 550);
-      }},
+      {
+        delay: 600, fn: () => {
+          setNordenAttack(false); setGeneralHit(true); setNImpact(true);
+          const cDmg = won ? 12 : 22;
+          setGeneralHp(prev => Math.max(1, prev - cDmg));
+          spawnFloatingText(won ? `COUNTER: ${cDmg}` : `COUNTER: ${cDmg}`, 'dmg-deflect', 'general');
+
+          setTimeout(() => { setGeneralHit(false); }, 450);
+          setTimeout(() => setNImpact(false), 550);
+        }
+      },
       // T+900: Norden's counter line — waits for full type + read time
-      { delay: 900,   fn: () => showText('NORDEN', counter.line) },
+      { delay: 900, fn: () => showText('NORDEN', counter.line) },
       // After reading Norden's line: Result verdict
       { delay: nWait, fn: () => showText('RESULT', resultTx) },
       // After reading result: End battle sequence
-      { delay: lineWait(resultTx), fn: () => {
-        setIsInBattle(false);
-        normalLineRef.current = '';
-        if (isLastMove) {
-          setTimeout(() => {
-            setMoveRound(mr => mr + 1);
-            setUsedMoves([]);
-          }, 500);
+      {
+        delay: lineWait(resultTx), fn: () => {
+          setIsInBattle(false);
+          normalLineRef.current = '';
+          if (isLastMove) {
+            setTimeout(() => {
+              setMoveRound(mr => mr + 1);
+              setUsedMoves([]);
+            }, 500);
+          }
         }
-      }},
+      },
     ]);
   }, [usedMoves, isInBattle, crashed, moveRound, turnIdx, showText, spawnFloatingText, runSequence]);
 
   // ── Derived values ────────────────────────────────────────────────────────
-  const ti        = Math.min(turnIdx, 5);
+  const ti = Math.min(turnIdx, 5);
   const generalDisp = Math.max(1, generalHp);
   // Norden's displayed HP: lower of base decay OR player-inflicted damage
   const nordenBaseHp = NORDEN_BASE[ti];
-  const nordenDisp   = Math.max(1, Math.min(nordenBaseHp, nordenHp));
-  const remaining    = Math.max(0, TOTAL - elapsed);
+  const nordenDisp = Math.max(1, Math.min(nordenBaseHp, nordenHp));
+  const remaining = Math.max(0, TOTAL - elapsed);
 
   const iBlur = turnIdx >= 3 ? `blur(${(turnIdx - 2) * 0.25}px)` : 'none';
 
@@ -1063,7 +1069,7 @@ export default function App() {
     'hue-rotate(26deg) saturate(0.55) brightness(0.92)',
   ][Math.min(turnIdx, 4)];
 
-  const chromaShift  = turnIdx >= 1 ? 1.5 + turnIdx * 1.0 : 0;
+  const chromaShift = turnIdx >= 1 ? 1.5 + turnIdx * 1.0 : 0;
   // No flicker class — removed the aggressive strobing
   const flickerClass = '';
 
@@ -1082,7 +1088,7 @@ export default function App() {
         @keyframes nordenBlink { 0%,90%,100%{opacity:1} 93%,98%{opacity:0.78} }
         .norden-idle { animation: nordenBlink 5.2s step-end infinite; }
       `}</style>
-      
+
       {!gameStarted && <StartScreen onStart={() => {
         initAudio();
         startBackgroundAmbience();
@@ -1097,16 +1103,16 @@ export default function App() {
           <svg width="0" height="0" style={{ position: 'absolute' }}>
             <defs>
               <radialGradient id="gCoat" cx="50%" cy="50%" r="65%">
-                <stop offset="0%"   stopColor="#506630"/><stop offset="50%"  stopColor="#3B4822"/><stop offset="100%" stopColor="#1E2A12"/>
+                <stop offset="0%" stopColor="#506630" /><stop offset="50%" stopColor="#3B4822" /><stop offset="100%" stopColor="#1E2A12" />
               </radialGradient>
               <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#FFF088"/><stop offset="40%" stopColor="#FFD700"/><stop offset="100%" stopColor="#B8860B"/>
+                <stop offset="0%" stopColor="#FFF088" /><stop offset="40%" stopColor="#FFD700" /><stop offset="100%" stopColor="#B8860B" />
               </linearGradient>
               <linearGradient id="nCoat" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%"   stopColor="#E8E8E8"/><stop offset="40%"  stopColor="#FFFFFF"/><stop offset="80%"  stopColor="#D4D4D4"/><stop offset="100%" stopColor="#A0A0A0"/>
+                <stop offset="0%" stopColor="#E8E8E8" /><stop offset="40%" stopColor="#FFFFFF" /><stop offset="80%" stopColor="#D4D4D4" /><stop offset="100%" stopColor="#A0A0A0" />
               </linearGradient>
               <radialGradient id="nTie" cx="50%" cy="0%">
-                <stop offset="0%" stopColor="#D940FF"/><stop offset="100%" stopColor="#6600AA"/>
+                <stop offset="0%" stopColor="#D940FF" /><stop offset="100%" stopColor="#6600AA" />
               </radialGradient>
             </defs>
           </svg>
@@ -1134,8 +1140,8 @@ export default function App() {
             {/* Chromatic aberration */}
             {chromaShift > 0 && (
               <div style={{
-                position:'absolute', inset:0, pointerEvents:'none', zIndex:9,
-                boxShadow:`inset ${chromaShift}px 0 0 rgba(255,0,50,0.14), inset -${chromaShift}px 0 0 rgba(0,50,255,0.14)`,
+                position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 9,
+                boxShadow: `inset ${chromaShift}px 0 0 rgba(255,0,50,0.14), inset -${chromaShift}px 0 0 rgba(0,50,255,0.14)`,
               }} />
             )}
 
@@ -1143,7 +1149,7 @@ export default function App() {
             {showHitFlash && <div className="hit-flash" />}
 
             {/* Impact bursts */}
-            {showImpact  && <div className="impact-enemy" />}
+            {showImpact && <div className="impact-enemy" />}
             {showNImpact && <div className="impact-player" />}
 
             {/* ── Norden info card — top left ── */}
@@ -1209,7 +1215,7 @@ export default function App() {
                       ? `What will GENERAL do?${roundLabel}`
                       : 'Regrouping...'}
                 </span>
-                <div style={{ display:'flex', gap:'0.5rem', alignItems:'center' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                   <span className="move-panel-score">
                     {score.general > 0 || score.norden > 0
                       ? `W:${score.general} L:${score.norden}` : ''}
@@ -1245,7 +1251,7 @@ export default function App() {
 
           {/* ═══ FOOTER ══════════════════════════════════════════════════ */}
           <div className="battle-footer">
-            <span>SA Task 1b — HCD Program</span>
+            <span>SA Task 1B — HCD Program</span>
             <span>Based on Clarke's "Superiority" (1951)</span>
             <span>DIVERGENCE SIM v6.0</span>
           </div>
