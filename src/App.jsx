@@ -85,20 +85,20 @@ const GENERAL_MOVE_LINES = {
 
 const NORDEN_COUNTERS = {
   tl: {
-    hit: { callout: 'NORDEN responds with THEORETICAL PURITY!',  line: 'NORDEN: The laboratory data was unambiguous. Individual operational stresses are outliers. The model is sound; the environment is simply non-compliant.' },
-    deflect: { callout: 'NORDEN deploys STATISTICAL DEFENSE!',        line: 'NORDEN: Casualty rates were within documented stress parameters. Human performance variance is a known constant, General.' },
+    hit: { callout: 'NORDEN responds with THEORETICAL PURITY!',  line: 'NORDEN: The laboratory data was unambiguous. Look at the Manhattan Project—operational anomalies will always exist, but the core physics remain unassailable. The environment is simply non-compliant.' },
+    deflect: { callout: 'NORDEN deploys STATISTICAL DEFENSE!',        line: 'NORDEN: Casualty rates were within documented stress parameters. Our early analog computers correctly modeled this human variance. It is a known, acceptable constant.' },
   },
   tr: {
-    hit: { callout: 'NORDEN invokes LABORATORY SUPERIORITY!',    line: 'NORDEN: Even the early V2 programs had their friction, General. We have moved past such primitive constraints. Friction disappears at sufficient technological advantage.' },
-    deflect: { callout: 'NORDEN deploys ADVANCEMENT LOGIC!',          line: 'NORDEN: Transitional friction is the standard cost of any meaningful advance. The alternative is permanent stagnation.' },
+    hit: { callout: 'NORDEN invokes LABORATORY SUPERIORITY!',    line: 'NORDEN: Even the early V2 programs had their aerodynamic friction, General. We have moved past such primitive constraints. Friction disappears at sufficient technological advantage.' },
+    deflect: { callout: 'NORDEN deploys ADVANCEMENT LOGIC!',          line: 'NORDEN: Transitional friction is the standard cost of any advance. The alternative is permanent stagnation. We cannot build the future using legacy combustion paradigms.' },
   },
   bl: {
-    deflect: { callout: 'NORDEN deploys SPECIALISATION DOCTRINE!',   line: 'NORDEN: Specialisation is the necessary price of peak performance. Legacy interoperability is a constraint on progress.' },
-    hit: { callout: 'NORDEN invokes SCALE THEORY!',               line: 'NORDEN: Field repair is a logistical problem. We were solving a strategic one. You are conflating two different scales entirely.' },
+    deflect: { callout: 'NORDEN deploys SPECIALISATION DOCTRINE!',   line: 'NORDEN: Specialisation is the necessary price of peak performance. The French built the Maginot Line for legacy interoperability, and history proved static systems fail against hyper-focused advancement.' },
+    hit: { callout: 'NORDEN invokes SCALE THEORY!',               line: 'NORDEN: Field repair is a logistical problem of scale. The first Dreadnoughts couldn\'t dock in standard ports, yet they redefined naval dominance. You are conflating local inconvenience with strategic obsolescence.' },
   },
   br: {
-    deflect: { callout: 'NORDEN deploys UTILITARIAN CALCULUS!',       line: 'NORDEN: The aggregate strategic outcome is statistically disproportionate to individual incident costs. The mathematics is clear.' },
-    hit: { callout: 'NORDEN uses ANALYTICAL FRAMING!',            line: 'NORDEN: Individual human cost is analytically distinct from systemic validity. To conflate them is an emotional argument, not a strategic one.' },
+    deflect: { callout: 'NORDEN deploys UTILITARIAN CALCULUS!',       line: 'NORDEN: The aggregate strategic outcome is statistically disproportionate to individual incident costs. The mathematics of modern warfare are cold, General, but they are precise.' },
+    hit: { callout: 'NORDEN uses ANALYTICAL FRAMING!',            line: 'NORDEN: Individual human cost is analytically distinct from systemic validity. We are building the ultimate weapon, not a life raft. To conflate the two is an emotional argument, not a strategic one.' },
   },
 };
 
