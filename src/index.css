@@ -1,0 +1,423 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --teal:   #00FFB2;
+  --purple: #9D00FF;
+  --orange: #FF6B00;
+  --red:    #FF1744;
+  --green:  #39FF14;
+  --gold:   #FFD700;
+  --cream:  #E8E4D0;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-vt:   'VT323', monospace;
+}
+
+html, body, #root {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #060504;
+  font-family: var(--font-mono);
+  color: #D0D0C8;
+}
+
+/* ─── SCANLINES ──────────────────────────────────────────── */
+.scanlines::after {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9000;
+  background: repeating-linear-gradient(
+    to bottom, transparent 0px, transparent 3px,
+    rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px
+  );
+}
+
+/* ─── FLICKER ─────────────────────────────────────────────── */
+@keyframes flicker8hz { 0%,100%{opacity:1} 15%,55%{opacity:0.7} 30%,80%{opacity:0.38} 45%,65%{opacity:0.85} }
+.flicker { animation: flicker8hz 0.13s steps(1) infinite; }
+
+/* ─── ANIMATIONS ──────────────────────────────────────────── */
+@keyframes arenaShake {
+  0%,100%{transform:translate(0,0)}  15%{transform:translate(-6px,3px)}
+  30%{transform:translate(7px,-3px)} 50%{transform:translate(-4px,4px)}
+  70%{transform:translate(5px,-2px)} 85%{transform:translate(-3px,2px)}
+}
+.arena-shake { animation: arenaShake 0.42s ease-out; }
+
+@keyframes blinkAnim  { 0%,100%{opacity:1} 50%{opacity:0} }
+@keyframes fadeIn     { from{opacity:0} to{opacity:1} }
+@keyframes slideUp    { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+/* Sprite idle bob — subtle, Pokémon-like */
+@keyframes spriteIdle {
+  0%,100% { transform: translateY(0px); }
+  50%     { transform: translateY(-4px); }
+}
+.sprite-idle-a { animation: spriteIdle 2.8s ease-in-out infinite; display: block; }
+.sprite-idle-b { animation: spriteIdle 3.2s ease-in-out infinite; animation-delay: -1.6s; display: block; }
+
+/* ─── GAME OVER SCREEN ───────────────────────────────────── */
+.gameover-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #000;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 1.4rem;
+  animation: fadeIn 1.8s ease-out;
+}
+.go-header {
+  text-align: center;
+  border: 2px solid var(--red);
+  padding: 0.7rem 2.2rem;
+  box-shadow: 0 0 35px rgba(255,23,68,0.2), inset 0 0 14px rgba(255,23,68,0.05);
+  animation: slideUp 0.6s ease-out;
+}
+.go-title {
+  font-family: var(--font-vt); font-size: 3.4rem; letter-spacing: 0.12em;
+  color: var(--red); text-shadow: 0 0 25px rgba(255,23,68,0.65);
+}
+.go-subtitle { font-family: var(--font-vt); font-size: 1.1rem; color: rgba(255,23,68,0.55); margin-top: 0.2rem; }
+.go-stats {
+  border: 1px solid #1e0808; padding: 0.7rem 1.8rem; min-width: 340px;
+  background: rgba(255,23,68,0.02); animation: slideUp 0.6s 0.5s ease-out both;
+}
+.go-stat {
+  font-family: var(--font-vt); font-size: 1rem;
+  display: flex; justify-content: space-between; gap: 2rem;
+  padding: 0.18rem 0; border-bottom: 1px solid #0e0505; color: #444;
+}
+.go-stat:last-child { border-bottom: none; }
+.go-val-red   { color: var(--red);   text-shadow: 0 0 5px rgba(255,23,68,0.5); }
+.go-val-green { color: var(--green); text-shadow: 0 0 5px rgba(57,255,20,0.5); }
+.go-val-dim   { color: #333; }
+.go-score {
+  font-family: var(--font-vt); font-size: 0.94rem; text-align: center;
+  padding: 0.5rem 1.5rem; border: 1px solid #1a1212;
+  color: #555; min-width: 340px; line-height: 1.6;
+  animation: slideUp 0.6s 1.2s ease-out both;
+}
+.go-score-highlight { color: #888; }
+.go-quote {
+  font-family: var(--font-vt); font-size: 0.95rem; color: #E5E5E5;
+  text-align: center; max-width: 460px; line-height: 1.75;
+  border-left: 2px solid #444; border-right: 2px solid #444;
+  padding: 0 1rem; animation: slideUp 0.6s 2.0s ease-out both;
+}
+.go-cell-note {
+  font-family: var(--font-vt); font-size: 0.85rem; color: #AAA;
+  animation: slideUp 0.5s 2.8s ease-out both;
+}
+.go-restart {
+  font-family: var(--font-vt); font-size: 0.82rem; color: #CCC;
+  animation: blinkAnim 1.8s 3.5s ease-in-out infinite, slideUp 0.5s 3.4s ease-out both;
+}
+
+/* ─── BATTLE ROOT ─────────────────────────────────────────── */
+.battle-root { width: 100vw; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ─── BATTLE ARENA ────────────────────────────────────────── */
+.battle-arena { flex: 1; position: relative; overflow: hidden; min-height: 0; }
+
+/* ─── UNIT CONTAINERS — Pokémon-style composition ─────────── */
+/*
+  Sprites are anchored from the BOTTOM so their feet sit ON the
+  canvas-drawn platforms.
+
+  Canvas platform positions (as fraction of arena height H):
+    Near platform top (player): H × 0.70  → bottom: ~27%
+    Far  platform top (enemy):  H × 0.44  → bottom: ~53%
+*/
+.unit-container {
+  position: absolute;
+  display: flex; flex-direction: column; align-items: center;
+  z-index: 4;
+}
+
+/* Norden — far perspective standing on the elevated platform */
+.unit-enemy {
+  right: 21%;
+  bottom: 47%; /* Shifted down to accommodate +6% environment offset */
+}
+
+/* General — close-up perspective dominating the foreground */
+.unit-player {
+  left: 9%;
+  bottom: 21%; /* Shifted down */
+  transform: scale(1.15); /* Boost scale slightly for severe perspective */
+}
+
+/* ─── INFO CARDS ──────────────────────────────────────────── */
+/* Repositioned closer to the individual sprites */
+.info-card-pos-enemy  { position: absolute; bottom: 80%; right: 35%; z-index: 5; }
+.info-card-pos-player { position: absolute; bottom: 42%; left: 32%; z-index: 5; }
+
+.info-card {
+  min-width: 220px;
+  background: linear-gradient(135deg, rgba(8,8,6,0.98) 0%, rgba(3,3,2,0.92) 100%);
+  padding: 0.4rem 0.8rem 0.6rem;
+  backdrop-filter: blur(4px);
+  border-radius: 6px 0px 6px 0px;
+  border-left: 4px solid #333;
+}
+.info-card.enemy  { border-left-color: var(--purple); box-shadow: 4px 4px 15px rgba(157,0,255,0.1); }
+.info-card.player { border-left-color: var(--teal); box-shadow: 4px 4px 15px rgba(0,255,178,0.1); }
+.ic-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2px; }
+.ic-name { font-family: var(--font-vt); font-size: 1.3rem; letter-spacing: 0.05em; font-weight: bold; }
+.info-card.enemy  .ic-name { color: var(--purple); text-shadow: 1px 1px 0px #000; }
+.info-card.player .ic-name { color: var(--teal);   text-shadow: 1px 1px 0px #000; }
+.ic-level { font-family: var(--font-vt); font-size: 0.9rem; color: #666; margin-bottom: 2px; }
+.ic-sub { font-family: var(--font-mono); font-size: 0.5rem; color: #555; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px; }
+
+.hp-row  { display: flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); padding: 3px 6px; border-radius: 2px; }
+.hp-lbl  { font-family: var(--font-vt); font-size: 0.8rem; color: #E0E0E0; flex-shrink: 0; font-weight: bold; }
+.hp-track { flex: 1; height: 10px; background: #111; border: 1px solid #333; border-radius: 2px; overflow: hidden; position: relative; }
+.hp-fill  { height: 100%; border-radius: 1px; transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.hp-num   { font-family: var(--font-vt); font-size: 0.85rem; color: #AAA; text-align: right; margin-top: 4px; padding-right: 2px; }
+
+/* Turn/score badge in arena */
+.arena-badge {
+  position: absolute; top: 6px; right: 8px; z-index: 6;
+  font-family: var(--font-vt); font-size: 0.64rem; letter-spacing: 0.12em;
+  color: rgba(57,255,20,0.3);
+}
+
+/* ─── HIT FLASH ───────────────────────────────────────────── */
+.hit-flash {
+  position: absolute; inset: 0; pointer-events: none; z-index: 8;
+  background: white; animation: hitFlash 0.28s ease-out forwards;
+}
+@keyframes hitFlash { 0%{opacity:0.5} 100%{opacity:0} }
+
+/* ─── IMPACT BURSTS ───────────────────────────────────────── */
+.impact-enemy, .impact-player {
+  position: absolute; pointer-events: none; z-index: 10;
+  border-radius: 50%;
+  animation: impactBurst 0.52s ease-out forwards;
+}
+.impact-enemy  { right: 12%; top: 15%; width: 90px; height: 90px; background: radial-gradient(circle, #FFD700 0%, rgba(255,107,0,0.55) 45%, transparent 75%); }
+.impact-player { left: 8%;  bottom: 28%; width: 80px; height: 80px; background: radial-gradient(circle, #9D00FF 0%, rgba(157,0,255,0.45) 45%, transparent 75%); }
+@keyframes impactBurst { 0%{transform:scale(0.12);opacity:1} 40%{transform:scale(1.3);opacity:0.92} 100%{transform:scale(1.8);opacity:0} }
+
+/* ─── DIVERGENCE GRAPH STRIP ──────────────────────────────── */
+.div-strip {
+  flex: 0 0 80px;
+  background: #020401;
+  border-top:    1px solid rgba(0,255,178,0.1);
+  border-bottom: 1px solid rgba(0,255,178,0.08);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.div-toprow {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 3px 10px 1px; flex-shrink: 0;
+}
+.div-title { font-family: var(--font-vt); font-size: 0.62rem; color: rgba(0,255,178,0.35); letter-spacing: 0.12em; }
+.div-legend { display: flex; gap: 1rem; }
+.div-leg-item { font-family: var(--font-vt); font-size: 0.6rem; letter-spacing: 0.04em; }
+.div-canvas-wrap { flex: 1; position: relative; overflow: hidden; }
+.div-canvas { display: block; width: 100%; height: 100%; }
+.div-midline {
+  position: absolute; left: 0; right: 0; top: 50%; height: 1px;
+  background: rgba(0,255,100,0.07); pointer-events: none;
+}
+.div-botrow {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1px 10px 3px; flex-shrink: 0;
+}
+.div-desc { font-family: var(--font-vt); font-size: 0.6rem; color: #1e1e1e; font-style: italic; }
+.div-pct  { font-family: var(--font-vt); font-size: 0.68rem; letter-spacing: 0.1em; }
+
+/* ─── BATTLE UI PANEL ─────────────────────────────────────── */
+.battle-ui {
+  flex: 0 0 210px;
+  display: grid; grid-template-columns: 58% 42%;
+  background: #060504;
+  border-top: 3px solid #1a2814;
+  box-shadow: inset 0 2px 0 rgba(57,255,20,0.08);
+  position: relative;
+}
+/* Corner bracket decorators */
+.battle-ui::before, .battle-ui::after { content: ''; position: absolute; width: 10px; height: 10px; }
+.battle-ui::before { top: 7px; left: 7px; border-top: 1px solid rgba(57,255,20,0.3); border-left: 1px solid rgba(57,255,20,0.3); }
+.battle-ui::after  { bottom: 7px; right: 7px; border-bottom: 1px solid rgba(57,255,20,0.3); border-right: 1px solid rgba(57,255,20,0.3); }
+
+/* ─── DIALOGUE PANEL ──────────────────────────────────────── */
+.dialogue-panel {
+  padding: 0.55rem 1rem 0.45rem;
+  border-right: 1px solid rgba(57,255,20,0.07);
+  background: #060504;
+  display: flex; flex-direction: column; position: relative; overflow: hidden;
+}
+.dialogue-who {
+  font-family: var(--font-vt); font-size: 0.85rem; letter-spacing: 0.12em;
+  color: rgba(57,255,20,0.45); margin-bottom: 0.15rem; min-height: 0.9em;
+}
+.typewriter-text {
+  font-family: var(--font-vt); font-size: 1.4rem;
+  color: #D0D0C8; line-height: 1.4;
+  white-space: pre-wrap; word-break: break-word;
+  flex: 1; overflow: hidden;
+}
+.typewriter-cursor { color: var(--teal); animation: blinkAnim 0.75s step-end infinite; }
+.dialogue-arrow {
+  position: absolute; bottom: 26px; right: 10px;
+  font-family: var(--font-vt); font-size: 1.1rem;
+  color: var(--green); animation: blinkAnim 0.65s step-end infinite;
+}
+.battle-announce {
+  font-family: var(--font-vt); font-size: 0.85rem;
+  color: rgba(57,255,20,0.35); letter-spacing: 0.06em;
+  margin-top: auto; padding-top: 0.18rem;
+  border-top: 1px solid rgba(255,255,255,0.03);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  min-height: 1.2em;
+}
+
+/* Norden attack indicator in dialogue panel */
+.norden-counter-badge {
+  font-family: var(--font-vt); font-size: 0.65rem;
+  color: rgba(157,0,255,0.7); letter-spacing: 0.08em;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid rgba(157,0,255,0.3);
+  display: inline-block; margin-bottom: 0.1rem;
+  animation: blinkAnim 0.5s step-end 3;
+}
+
+/* ─── MOVE PANEL ──────────────────────────────────────────── */
+.move-panel { background: #050403; display: flex; flex-direction: column; }
+.move-panel-header {
+  padding: 4px 10px 3px;
+  border-bottom: 1px solid rgba(57,255,20,0.06);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.move-panel-label { font-family: var(--font-vt); font-size: 0.85rem; color: rgba(57,255,20,0.5); letter-spacing: 0.08em; }
+.move-panel-score { font-family: var(--font-vt); font-size: 0.7rem; color: #2a2a2a; }
+.move-panel-timer { font-family: var(--font-vt); font-size: 0.75rem; color: #252525; }
+.move-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.move-btn {
+  font-family: var(--font-vt); font-size: 1.25rem; color: #A8A8A0;
+  background: transparent; border: none;
+  border-right:  1px solid rgba(255,255,255,0.035);
+  border-bottom: 1px solid rgba(255,255,255,0.035);
+  padding: 0.4rem 0.8rem;
+  text-align: left; cursor: pointer;
+  display: flex; flex-direction: column; gap: 4px;
+  transition: background 0.12s, color 0.12s;
+  outline: none;
+}
+.move-btn:nth-child(even)  { border-right: none; }
+.move-btn:nth-child(n+3)   { border-bottom: none; }
+.move-btn:hover:not(:disabled):not(.used) { background: rgba(57,255,20,0.08); color: var(--green); }
+.move-btn:active:not(:disabled) { transform: scale(0.97); }
+.move-btn:disabled:not(.used)   { opacity: 0.25; cursor: default; }
+.move-btn.used { color: #242424 !important; cursor: default; background: rgba(0,0,0,0.15); }
+.move-label { letter-spacing: 0.03em; font-size: 1.25rem; font-weight: bold; }
+.move-type  { font-family: var(--font-mono); font-size: 0.70rem; opacity: 0.55; letter-spacing: 0.18em; margin-top: 2px; }
+.move-btn.used .move-type { opacity: 0.2; }
+
+/* "Reset" pulse on reset */
+@keyframes resetPulse { 0%,100%{opacity:0.3} 50%{opacity:0.9} }
+.move-btn.resetting { animation: resetPulse 0.5s ease-in-out 3; }
+
+/* ─── FOOTER ──────────────────────────────────────────────── */
+.battle-footer {
+  flex: 0 0 18px;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 0.8rem;
+  font-family: var(--font-vt); font-size: 0.58rem; color: #1c1c1a;
+  background: rgba(0,0,0,0.55);
+  border-top: 1px solid rgba(255,255,255,0.015);
+}
+
+/* ─── DOOM TIMER ──────────────────────────────────────────── */
+.doom-timer-container {
+  position: absolute;
+  top: 20px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  background: rgba(8, 6, 4, 0.9);
+  border: 1px solid rgba(255, 0, 50, 0.4);
+  padding: 8px 20px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(255, 0, 50, 0.15);
+  border-radius: 3px;
+}
+.doom-timer-container.doom-critical {
+  border-color: rgba(255, 0, 0, 0.9);
+  animation: doomPulse 1s ease-in-out infinite;
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+}
+.doom-label {
+  font-family: var(--font-vt);
+  font-size: 0.8rem;
+  color: #ff4a4a;
+  letter-spacing: 0.15em;
+}
+.doom-time {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  margin-top: 2px;
+}
+@keyframes doomPulse {
+  0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+  50% { opacity: 0.85; transform: translateX(-50%) scale(1.05); }
+}
+
+/* ─── FLOATING COMBAT TEXT ────────────────────────────────── */
+.floating-text {
+  position: absolute;
+  z-index: 30;
+  font-family: var(--font-vt);
+  pointer-events: none;
+  animation: floatUp 1.8s cubic-bezier(0.1, 0.8, 0.1, 1) forwards;
+  white-space: nowrap;
+}
+.float-norden { top: 30%; right: 20%; }
+.float-general { bottom: 45%; left: 15%; }
+.dmg-hit { font-size: 2.2rem; color: #fff; text-shadow: 2px 2px 0px #000, 0 0 10px #ff6b00; }
+.dmg-crit { font-size: 2.8rem; color: #ffeb3b; text-shadow: 2px 2px 0px #000, 0 0 15px #ff5722; font-weight: bold; }
+.dmg-deflect { font-size: 1.6rem; color: #b0bec5; text-shadow: 1px 1px 0px #000; }
+
+@keyframes floatUp {
+  0%   { opacity: 0; transform: translateY(20px) scale(0.5); }
+  15%  { opacity: 1; transform: translateY(0px) scale(1.1); }
+  30%  { transform: translateY(-10px) scale(1); }
+  100% { opacity: 0; transform: translateY(-60px) scale(1); }
+}
+
+/* ─── START SCREEN ───────────────────────────────────────────── */
+.start-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #040506;
+  display: flex; align-items: center; justify-content: center;
+  color: #DDD;
+}
+.start-content {
+  max-width: 600px;
+  border: 1px solid rgba(0, 255, 178, 0.2);
+  background: rgba(0, 0, 0, 0.6);
+  padding: 2rem;
+  box-shadow: 0 0 30px rgba(0, 255, 178, 0.05);
+}
+.start-title {
+  font-family: var(--font-vt); font-size: 2.8rem; color: var(--teal);
+  text-align: center; margin-bottom: 1.5rem; letter-spacing: 0.1em;
+  text-shadow: 0 0 15px rgba(0, 255, 178, 0.4);
+}
+.start-instructions {
+  font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.6;
+  color: #AAA; margin-bottom: 2rem;
+}
+.start-instructions h3 {
+  font-family: var(--font-vt); font-size: 1.2rem; color: #FFF;
+  margin-top: 1.5rem; margin-bottom: 0.5rem; border-bottom: 1px solid #333; padding-bottom: 0.2rem;
+}
+.start-button {
+  width: 100%; display: block; background: transparent;
+  border: 1px solid rgba(0, 255, 178, 0.5); padding: 0.8rem;
+  font-family: var(--font-vt); font-size: 1.4rem; color: var(--teal);
+  cursor: pointer; transition: all 0.2s;
+}
+.start-button:hover {
+  background: rgba(0, 255, 178, 0.15); box-shadow: 0 0 15px rgba(0, 255, 178, 0.3);
+}
