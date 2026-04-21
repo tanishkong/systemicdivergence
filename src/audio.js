@@ -8,13 +8,45 @@ let bcNode = null;
 let pulseOsc = null;
 
 export async function initAudio() {
-  if (!ctx) {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    ctx = new AudioContext();
+  try {
+    if (!ctx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      ctx = new AudioContext();
+    }
+    if (ctx.state === 'suspended') {
+      await ctx.resume();
+    }
+    console.log("Audio Engine initialized successfully: ", ctx.state);
+  } catch (err) {
+    console.error("Audio Initialization failed:", err);
   }
-  if (ctx.state === 'suspended') {
-    await ctx.resume();
+}
+
+function createSafePanner(panValue) {
+  if (!ctx) return null;
+  if (ctx.createStereoPanner) {
+    const panner = ctx.createStereoPanner();
+    panner.pan.value = panValue;
+    return panner;
+  } else if (ctx.createPanner) {
+    const panner = ctx.createPanner();
+    panner.panningModel = 'equalpower';
+    panner.setPosition(panValue, 0, 1 - Math.abs(panValue));
+    return panner;
   }
+  const pass = ctx.createGain(); // Fallback
+  return pass;
+}
+
+function makeBitcrushCurve(bits) {
+  const steps = Math.pow(2, bits);
+  const len = 4096;
+  const curve = new Float32Array(len);
+  for (let i = 0; i < len; i++) {
+    const x = i * 2 / len - 1;
+    curve[i] = Math.round(x * steps) / steps;
+  }
+  return curve;
 }
 
 export function startBackgroundAmbience() {
@@ -57,23 +89,9 @@ export function startBackgroundAmbience() {
   staticGainNode = ctx.createGain();
   staticGainNode.gain.value = 0.04; // Very subtle
   
-  // Real bitcrusher via sample-and-hold logic
-  bcNode = ctx.createScriptProcessor(4096, 1, 1);
-  let phaser = 0;
-  let last = 0;
-  bcNode.normFreq = 1.0;
-  bcNode.onaudioprocess = function(e) {
-    const input = e.inputBuffer.getChannelData(0);
-    const output = e.outputBuffer.getChannelData(0);
-    for (let i = 0; i < input.length; i++) {
-      phaser += bcNode.normFreq;
-      if (phaser >= 1.0) {
-        phaser -= 1.0;
-        last = input[i];
-      }
-      output[i] = last;
-    }
-  };
+  // Real bitcrusher via hardware-safe WaveShaper
+  bcNode = ctx.createWaveShaper();
+  bcNode.curve = makeBitcrushCurve(16); // Start clear (16-bit)
   
   staticNode.connect(staticFilter);
   staticFilter.connect(bcNode);
@@ -104,16 +122,15 @@ export function startTelemetryBeacon() {
   const mainGain = ctx.createGain();
   mainGain.gain.value = 0; // Base amplitude 0
   
-  const panner = ctx.createStereoPanner();
-  panner.pan.value = 0.8; // Right channel for Norden
+  const panner = createSafePanner(0.8); // Right channel for Norden
   
   lfo.connect(lfoGain);
   lfoGain.connect(mainGain.gain); // Modulate gain
   
   pulseOsc.connect(pulseFilter);
   pulseFilter.connect(mainGain);
-  mainGain.connect(panner);
-  panner.connect(ctx.destination);
+  if(panner) { mainGain.connect(panner); panner.connect(ctx.destination); }
+  else { mainGain.connect(ctx.destination); }
   
   pulseOsc.start();
   lfo.start();
@@ -129,8 +146,11 @@ export function updateSystemicAudio(elapsed, turnIdx) {
   // Structural Scaling: static volume rises harshly
   staticGainNode.gain.setTargetAtTime(0.04 + frac * 0.12, ctx.currentTime, 0.5);
   
-  // True Bitcrushing: resolution drops drastically per turn
-  bcNode.normFreq = Math.max(0.08, 1.0 - (turnIdx * 0.22)); 
+  // True Bitcrushing: bit-depth drops drastically over turns
+  if (bcNode) {
+    const bits = Math.max(2, 16 - turnIdx * 3); // Drops from 16 to 1
+    bcNode.curve = makeBitcrushCurve(bits);
+  }
 }
 
 // Drops hum pitch and distorts static for end-of-game divergence
@@ -140,7 +160,7 @@ export function triggerDivergenceAudio() {
   humOsc.frequency.exponentialRampToValueAtTime(10, ctx.currentTime + 4);
   staticFilter.frequency.exponentialRampToValueAtTime(3000, ctx.currentTime + 3);
   staticFilter.Q.value = 5; // harsh ringing
-  if (bcNode) bcNode.normFreq = 0.02; // maximum bitcrush fragmentation
+  if (bcNode) bcNode.curve = makeBitcrushCurve(1); // maximum bitcrush fragmentation
 }
 
 export function stopAllAudio() {
@@ -156,12 +176,11 @@ export function playDialogueBlip() {
   osc.frequency.setValueAtTime(500 + Math.random() * 80, ctx.currentTime);
   const gain = ctx.createGain();
   gain.gain.setValueAtTime(0.02, ctx.currentTime);
-  const panner = ctx.createStereoPanner();
-  panner.pan.value = -0.7; // Left side for the General's typing
+  const panner = createSafePanner(-0.7); // Left side for the General's typing
   
   osc.connect(gain);
-  gain.connect(panner);
-  panner.connect(ctx.destination);
+  if(panner) { gain.connect(panner); panner.connect(ctx.destination); }
+  else { gain.connect(ctx.destination); }
   osc.start();
   osc.stop(ctx.currentTime + 0.05);
 }
