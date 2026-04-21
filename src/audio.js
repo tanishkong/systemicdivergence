@@ -3,6 +3,8 @@ let humOsc = null;
 let humFilter = null;
 let staticNode = null;
 let staticFilter = null;
+let staticGainNode = null;
+let bcNode = null;
 let pulseOsc = null;
 
 export function initAudio() {
@@ -48,12 +50,31 @@ export function startBackgroundAmbience() {
   staticFilter.frequency.value = 800; // mid-range static
   staticFilter.Q.value = 0.5;
   
-  const staticGain = ctx.createGain();
-  staticGain.gain.value = 0.04; // Very subtle
+  staticGainNode = ctx.createGain();
+  staticGainNode.gain.value = 0.04; // Very subtle
+  
+  // Real bitcrusher via sample-and-hold logic
+  bcNode = ctx.createScriptProcessor(4096, 1, 1);
+  let phaser = 0;
+  let last = 0;
+  bcNode.normFreq = 1.0;
+  bcNode.onaudioprocess = function(e) {
+    const input = e.inputBuffer.getChannelData(0);
+    const output = e.outputBuffer.getChannelData(0);
+    for (let i = 0; i < input.length; i++) {
+      phaser += bcNode.normFreq;
+      if (phaser >= 1.0) {
+        phaser -= 1.0;
+        last = input[i];
+      }
+      output[i] = last;
+    }
+  };
   
   staticNode.connect(staticFilter);
-  staticFilter.connect(staticGain);
-  staticGain.connect(ctx.destination);
+  staticFilter.connect(bcNode);
+  bcNode.connect(staticGainNode);
+  staticGainNode.connect(ctx.destination);
   staticNode.start();
 }
 
@@ -79,15 +100,33 @@ export function startTelemetryBeacon() {
   const mainGain = ctx.createGain();
   mainGain.gain.value = 0; // Base amplitude 0
   
+  const panner = ctx.createStereoPanner();
+  panner.pan.value = 0.8; // Right channel for Norden
+  
   lfo.connect(lfoGain);
   lfoGain.connect(mainGain.gain); // Modulate gain
   
   pulseOsc.connect(pulseFilter);
   pulseFilter.connect(mainGain);
-  mainGain.connect(ctx.destination);
+  mainGain.connect(panner);
+  panner.connect(ctx.destination);
   
   pulseOsc.start();
   lfo.start();
+}
+
+export function updateSystemicAudio(elapsed, turnIdx) {
+  if (!ctx || !humOsc || !staticGainNode || !bcNode) return;
+  const frac = Math.min(elapsed / 120, 1.0);
+  
+  // Structural Scaling: hum pitch drops
+  humOsc.frequency.setTargetAtTime(45 - frac * 15, ctx.currentTime, 0.5); 
+  
+  // Structural Scaling: static volume rises harshly
+  staticGainNode.gain.setTargetAtTime(0.04 + frac * 0.12, ctx.currentTime, 0.5);
+  
+  // True Bitcrushing: resolution drops drastically per turn
+  bcNode.normFreq = Math.max(0.08, 1.0 - (turnIdx * 0.22)); 
 }
 
 // Drops hum pitch and distorts static for end-of-game divergence
@@ -97,6 +136,13 @@ export function triggerDivergenceAudio() {
   humOsc.frequency.exponentialRampToValueAtTime(10, ctx.currentTime + 4);
   staticFilter.frequency.exponentialRampToValueAtTime(3000, ctx.currentTime + 3);
   staticFilter.Q.value = 5; // harsh ringing
+  if (bcNode) bcNode.normFreq = 0.02; // maximum bitcrush fragmentation
+}
+
+export function stopAllAudio() {
+  if (ctx && ctx.state === 'running') {
+    ctx.suspend();
+  }
 }
 
 export function playDialogueBlip() {
@@ -106,9 +152,12 @@ export function playDialogueBlip() {
   osc.frequency.setValueAtTime(500 + Math.random() * 80, ctx.currentTime);
   const gain = ctx.createGain();
   gain.gain.setValueAtTime(0.02, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04); // sharp 40ms blip
+  const panner = ctx.createStereoPanner();
+  panner.pan.value = -0.7; // Left side for the General's typing
+  
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(panner);
+  panner.connect(ctx.destination);
   osc.start();
   osc.stop(ctx.currentTime + 0.05);
 }

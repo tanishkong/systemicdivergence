@@ -8,7 +8,9 @@ import {
   playAttackSound,
   playCritSound,
   playCounterSound,
-  triggerDivergenceAudio
+  triggerDivergenceAudio,
+  updateSystemicAudio,
+  stopAllAudio
 } from './audio';
 import './index.css';
 
@@ -920,11 +922,12 @@ export default function App() {
       const e = Math.floor((Date.now() - startTime.current) / 1000);
       setElapsed(e);
       const nt = TURN_STARTS.reduce((acc, ts, i) => e >= ts ? i : acc, 0);
+      updateSystemicAudio(e, nt);
       if (nt !== prevTurn.current) {
         prevTurn.current = nt; setTurnIdx(nt); setLineIdx(0); prevLine.current = 0;
       }
       if (e >= CRASH_START) setCrashed(true);
-      if (e >= BRICK_AT) setBricked(true);
+      if (e >= BRICK_AT) { setBricked(true); stopAllAudio(); }
     }, 250);
     return () => clearInterval(iv);
   }, [gameStarted]);
