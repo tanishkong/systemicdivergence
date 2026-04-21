@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
-
+/* Fonts are imported securely via index.html <link> tags for Vercel CDN stability */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -143,6 +142,14 @@ html, body, #root {
   left: 9%;
   bottom: 12%; /* Shifted down to accommodate near platform coordinate shift */
   transform: scale(0.96); /* Scaled down slightly so the hat does not clip */
+}
+
+/* ─── CROSS BROWSER PIXELATION FIX ─── */
+.pixel-sprite {
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
 }
 
 /* ─── INFO CARDS ──────────────────────────────────────────── */

@@ -675,6 +675,7 @@ function GeneralSprite({ decay, attacking, hit }) {
   const fColor = decay >= 3 ? `rgba(255,107,0,${(decay-2)*0.35})` : 'transparent';
   return (
     <motion.svg width="380" height="460" viewBox="0 0 20 28"
+      className="pixel-sprite"
       style={{
         imageRendering: 'pixelated', transformOrigin: 'bottom center',
         animation: jitter ? 'generalJitter 0.09s steps(1) infinite' : anim,
@@ -689,19 +690,6 @@ function GeneralSprite({ decay, attacking, hit }) {
       }
       transition={hit ? { duration: 0.4, ease: 'easeOut' } : attacking ? { duration: 0.5, ease: [0.4,0,0.2,1] } : {}}
     >
-      <defs>
-        <radialGradient id="gCoat" cx="50%" cy="50%" r="65%">
-          <stop offset="0%"   stopColor="#506630"/>
-          <stop offset="50%"  stopColor="#3B4822"/>
-          <stop offset="100%" stopColor="#1E2A12"/>
-        </radialGradient>
-        <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#FFF088"/>
-          <stop offset="40%" stopColor="#FFD700"/>
-          <stop offset="100%" stopColor="#B8860B"/>
-        </linearGradient>
-      </defs>
-
       {/* Expanded Hat */}
       <rect x="3" y="0" width="14" height="2" fill="url(#gGold)"/>
       <rect x="4" y="2" width="12" height="4" fill="#3B4822"/>
@@ -761,7 +749,7 @@ function NordenSprite({ decay, hit, nordenAttacking }) {
   const desat = decay >= 4 ? 0.3 : 0;
   return (
     <motion.svg width="180" height="300" viewBox="0 0 18 30"
-      className="norden-idle"
+      className="norden-idle pixel-sprite"
       style={{
         imageRendering: 'pixelated', transformOrigin: 'bottom center',
         filter: `saturate(${1-desat}) drop-shadow(0 8px 24px rgba(0,0,0,0.95)) drop-shadow(0 0 8px rgba(157,0,255,0.2))`,
@@ -777,19 +765,6 @@ function NordenSprite({ decay, hit, nordenAttacking }) {
         {}
       }
     >
-      <defs>
-        <linearGradient id="nCoat" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stopColor="#E8E8E8"/>
-          <stop offset="40%"  stopColor="#FFFFFF"/>
-          <stop offset="80%"  stopColor="#D4D4D4"/>
-          <stop offset="100%" stopColor="#A0A0A0"/>
-        </linearGradient>
-        <radialGradient id="nTie" cx="50%" cy="0%">
-          <stop offset="0%" stopColor="#D940FF"/>
-          <stop offset="100%" stopColor="#6600AA"/>
-        </radialGradient>
-      </defs>
-
       {/* Crisp Hair */}
       <rect x="5" y="0" width="8" height="2" fill="#0A0502"/>
       <rect x="4" y="1" width="2" height="4" fill="#0A0502"/>
@@ -1119,6 +1094,22 @@ export default function App() {
 
       {gameStarted && !bricked && (
         <div className={`battle-root scanlines ${flickerClass}`}>
+          <svg width="0" height="0" style={{ position: 'absolute' }}>
+            <defs>
+              <radialGradient id="gCoat" cx="50%" cy="50%" r="65%">
+                <stop offset="0%"   stopColor="#506630"/><stop offset="50%"  stopColor="#3B4822"/><stop offset="100%" stopColor="#1E2A12"/>
+              </radialGradient>
+              <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#FFF088"/><stop offset="40%" stopColor="#FFD700"/><stop offset="100%" stopColor="#B8860B"/>
+              </linearGradient>
+              <linearGradient id="nCoat" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%"   stopColor="#E8E8E8"/><stop offset="40%"  stopColor="#FFFFFF"/><stop offset="80%"  stopColor="#D4D4D4"/><stop offset="100%" stopColor="#A0A0A0"/>
+              </linearGradient>
+              <radialGradient id="nTie" cx="50%" cy="0%">
+                <stop offset="0%" stopColor="#D940FF"/><stop offset="100%" stopColor="#6600AA"/>
+              </radialGradient>
+            </defs>
+          </svg>
 
           {/* ── Prominent Doom Timer ── */}
           <div className={`doom-timer-container ${remaining < 30 ? 'doom-critical' : ''}`}>
