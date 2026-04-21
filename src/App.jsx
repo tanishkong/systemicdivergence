@@ -1092,8 +1092,8 @@ export default function App() {
         .norden-idle { animation: nordenBlink 5.2s step-end infinite; }
       `}</style>
 
-      {!gameStarted && <StartScreen onStart={() => {
-        initAudio();
+      {!gameStarted && <StartScreen onStart={async () => {
+        await initAudio();
         startBackgroundAmbience();
         startTelemetryBeacon();
         setGameStarted(true);

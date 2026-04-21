@@ -7,10 +7,14 @@ let staticGainNode = null;
 let bcNode = null;
 let pulseOsc = null;
 
-export function initAudio() {
-  if (ctx) return;
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  ctx = new AudioContext();
+export async function initAudio() {
+  if (!ctx) {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    ctx = new AudioContext();
+  }
+  if (ctx.state === 'suspended') {
+    await ctx.resume();
+  }
 }
 
 export function startBackgroundAmbience() {
