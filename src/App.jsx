@@ -1,5 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  initAudio, 
+  startBackgroundAmbience, 
+  startTelemetryBeacon, 
+  playDialogueBlip, 
+  playAttackSound, 
+  playCritSound, 
+  playCounterSound,
+  triggerDivergenceAudio
+} from './audio';
 import './index.css';
 
 // ─── NARRATIVE TURNS ──────────────────────────────────────────────────────────
@@ -46,9 +56,9 @@ const TURNS = [
     announce: 'FATAL HYSTERESIS ERROR.',
     lines: [
       { speaker: 'GENERAL', text: "I've asked to be moved to a different cell. They refused." },
-      { speaker: 'NORDEN',  text: 'I... I see.' },
+      { speaker: 'NORDEN',  text: 'I... I see... see... the var... the variables...' },
       { speaker: 'GENERAL', text: 'We built something that defeated us more completely than the enemy ever could. And now we share a room.' },
-      { speaker: 'NORDEN',  text: '[no response]' },
+      { speaker: 'NORDEN',  text: 'The math... mathematics... the model is... is... [SYSTEMIC COLLAPSE]' },
     ],
   },
 ];
@@ -73,24 +83,23 @@ const GENERAL_MOVE_LINES = {
   ],
 };
 
-// ─── NORDEN'S COUNTER-ATTACKS (2 rounds per move slot) ──────────────────────
 const NORDEN_COUNTERS = {
-  tl: [
-    { callout: 'NORDEN responds with THEORETICAL PURITY!',  line: 'NORDEN: The laboratory data was unambiguous. Individual operational stresses are execution problems, not design failures.' },
-    { callout: 'NORDEN deploys STATISTICAL DEFENSE!',        line: 'NORDEN: Casualty rates were within documented stress parameters. Human performance variance is a known constant, General.' },
-  ],
-  tr: [
-    { callout: 'NORDEN invokes LABORATORY SUPERIORITY!',    line: 'NORDEN: Friction disappears at sufficient technological advantage. The execution was inadequate. The theory was not.' },
-    { callout: 'NORDEN deploys ADVANCEMENT LOGIC!',          line: 'NORDEN: Transitional friction is the standard cost of any meaningful advance. The alternative is permanent stagnation.' },
-  ],
-  bl: [
-    { callout: 'NORDEN deploys SPECIALISATION DOCTRINE!',   line: 'NORDEN: Specialisation is the necessary price of peak performance. Legacy interoperability is a constraint on progress.' },
-    { callout: 'NORDEN invokes SCALE THEORY!',               line: 'NORDEN: Field repair is a logistical problem. We were solving a strategic one. You are conflating two different scales entirely.' },
-  ],
-  br: [
-    { callout: 'NORDEN deploys UTILITARIAN CALCULUS!',       line: 'NORDEN: The aggregate strategic outcome is statistically disproportionate to individual incident costs. The mathematics is clear.' },
-    { callout: 'NORDEN uses ANALYTICAL FRAMING!',            line: 'NORDEN: Individual human cost is analytically distinct from systemic validity. To conflate them is an emotional argument, not a strategic one.' },
-  ],
+  tl: {
+    hit: { callout: 'NORDEN responds with THEORETICAL PURITY!',  line: 'NORDEN: The laboratory data was unambiguous. Individual operational stresses are outliers. The model is sound; the environment is simply non-compliant.' },
+    deflect: { callout: 'NORDEN deploys STATISTICAL DEFENSE!',        line: 'NORDEN: Casualty rates were within documented stress parameters. Human performance variance is a known constant, General.' },
+  },
+  tr: {
+    hit: { callout: 'NORDEN invokes LABORATORY SUPERIORITY!',    line: 'NORDEN: Even the early V2 programs had their friction, General. We have moved past such primitive constraints. Friction disappears at sufficient technological advantage.' },
+    deflect: { callout: 'NORDEN deploys ADVANCEMENT LOGIC!',          line: 'NORDEN: Transitional friction is the standard cost of any meaningful advance. The alternative is permanent stagnation.' },
+  },
+  bl: {
+    deflect: { callout: 'NORDEN deploys SPECIALISATION DOCTRINE!',   line: 'NORDEN: Specialisation is the necessary price of peak performance. Legacy interoperability is a constraint on progress.' },
+    hit: { callout: 'NORDEN invokes SCALE THEORY!',               line: 'NORDEN: Field repair is a logistical problem. We were solving a strategic one. You are conflating two different scales entirely.' },
+  },
+  br: {
+    deflect: { callout: 'NORDEN deploys UTILITARIAN CALCULUS!',       line: 'NORDEN: The aggregate strategic outcome is statistically disproportionate to individual incident costs. The mathematics is clear.' },
+    hit: { callout: 'NORDEN uses ANALYTICAL FRAMING!',            line: 'NORDEN: Individual human cost is analytically distinct from systemic validity. To conflate them is an emotional argument, not a strategic one.' },
+  },
 };
 
 // ─── MOVES ────────────────────────────────────────────────────────────────────
@@ -121,12 +130,12 @@ const lineWait = (text) => text.length * TYPE_SPEED + READ_PAD;
 
 // ─── DIVERGENCE GRAPH DATA ────────────────────────────────────────────────────
 const DIV_DATA = [
-  { desc: 'Turn 1 ─ Theory and field conditions are aligned.',                       pct: 0   },
-  { desc: 'Turn 2 ─ Support overhead exceeds Norden\'s projections.',                pct: 15  },
-  { desc: 'Turn 3 ─ Hysteresis detected. Baseline is unrecoverable.',                pct: 38  },
-  { desc: 'Turn 4 ─ Specialisation prevents mutual repair. Fleet is paralysed.',     pct: 62  },
-  { desc: 'Turn 5 ─ Gap exceeds all closure capacity.',                              pct: 88  },
-  { desc: 'TERMINAL ─ The distance is permanent. System has collapsed.',             pct: 100 },
+  { desc: 'Turn 1 ─ Pure Alignment: Norden is perfectly calm. The laboratory models hold.',                pct: 0   },
+  { desc: 'Turn 2 ─ Mild Discrepancy: Norden feels irritation. He dismisses early friction as user error.', pct: 12  },
+  { desc: 'Turn 3 ─ Hysteretic Strain: Norden grows rigid. He attempts to mathematically force theory over reality.', pct: 33  },
+  { desc: 'Turn 4 ─ Structural Paralysis: Norden is desperate. The system is permanently fractured. He blames the Fleet.', pct: 68  },
+  { desc: 'Turn 5 ─ Cognitive Dissonance: Norden’s composure shatters. The gap exceeds all theoretical capacity.',   pct: 89  },
+  { desc: 'SYSTEM CRASH ─ Total Collapse: Norden\'s mind and the system have fatally diverged.',           pct: 100 },
 ];
 
 // ─── JAIL CELL BACKGROUND — Pokémon-style High Fidelity (Gritty Prison Version) ──
@@ -341,7 +350,7 @@ function drawJailCell(ctx, W, H, decay) {
   drawPlatform(ctx, W * 0.58, H * 0.50, W * 0.32, H * 0.05, decay, 'far', ta);
   
   // Near platform (General) - Low left, massive
-  drawPlatform(ctx, -W * 0.08, H * 0.76, W * 0.58, H * 0.08, decay, 'near', ta);
+  drawPlatform(ctx, -W * 0.08, H * 0.84, W * 0.58, H * 0.08, decay, 'near', ta);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // LAYER 6: DECAY / HYSTERESIS EFFECTS
@@ -518,11 +527,13 @@ function GameOverScreen({ score }) {
 
 // ─── DIVERGENCE GRAPH ─────────────────────────────────────────────────────────
 
-function DivergenceGraph({ turnIdx, crashed }) {
+function DivergenceGraph({ turnIdx, elapsed, crashed }) {
   const canvasRef = useRef(null);
   const frameRef  = useRef(null);
   const smoothT   = useRef(null);
   const smoothR   = useRef(null);
+  const elRef     = useRef(elapsed);
+  useEffect(() => { elRef.current = elapsed; }, [elapsed]);
 
   const draw = useCallback(() => {
     const c = canvasRef.current;
@@ -540,47 +551,56 @@ function DivergenceGraph({ turnIdx, crashed }) {
     ctx.fillStyle = '#020401';
     ctx.fillRect(W - Math.ceil(SCROLL) - 1, 0, Math.ceil(SCROLL) + 2, H);
 
-    const d = Math.min(turnIdx, 4);
+    const el = elRef.current ?? 0;
+    const frac = Math.max(0, Math.min(el / 120, 1.0)); // 0.0 (start) to 1.0 (crash)
     const t = Date.now() / 1000;
 
     if (!crashed) {
-      const theoryTarget = mid - Math.sin(t * 0.72) * 14 - d * 1.5;
+      const theoryTarget = mid - Math.sin(t * 0.72) * 14 - (frac * 6);
       smoothT.current    = smoothT.current * 0.82 + theoryTarget * 0.18;
 
-      const offsets = [0, 9, 20, 31, 46];
-      const phases  = [0, 0.18, 0.42, 0.82, 1.4];
-      const noises  = [0, 1.0, 3.2, 7.5, 17];
+      const jitter = Math.max(0, frac - 0.2);
+      const offsetAmt = frac * 28; // Reduced to fit inside new 110px constraints comfortably
+      const noiseAmt  = frac * 20 + (Math.random() - 0.5) * jitter * 25;
+
       const realityTarget = mid
-        + offsets[d]
-        + Math.sin(t * 0.72 + phases[d] * Math.PI) * (14 * (1 - d * 0.1))
-        + (Math.random() - 0.5) * 2 * noises[d];
+        + offsetAmt
+        + Math.sin(t * 0.72 + (frac * 1.5) * Math.PI) * (14 * (1 - frac * 0.5))
+        + (Math.random() - 0.5) * 2 * noiseAmt;
+      
       smoothR.current = smoothR.current * 0.82 + realityTarget * 0.18;
 
       const ty = Math.max(2, Math.min(H - 3, Math.round(smoothT.current)));
       const ry = Math.max(2, Math.min(H - 3, Math.round(smoothR.current)));
 
-      // Fill gap
-      if (d >= 1) {
+      // Fill gap with an intensifying warning color
+      if (frac > 0.1) {
         const lo = Math.min(ty, ry), hi = Math.max(ty, ry);
-        const gapA = d <= 2 ? 0.055 : 0.09;
-        ctx.fillStyle = d <= 2 ? `rgba(255,200,0,${gapA})` : `rgba(255,70,0,${gapA})`;
+        const gapA = frac < 0.4 ? 0.055 : 0.09;
+        ctx.fillStyle = frac < 0.4 ? `rgba(255,200,0,${gapA})` : `rgba(255,70,0,${gapA})`;
         ctx.fillRect(W - 2, lo, 2, hi - lo);
       }
 
       ctx.fillStyle = '#00FFB2'; ctx.shadowColor = '#00FFB2'; ctx.shadowBlur = 3;
       ctx.fillRect(W - 2, ty - 1, 2, 2);
 
-      const rColors = ['#00FFB2', '#BBFF20', '#FFC400', '#FF6B00', '#FF1744'];
-      ctx.fillStyle = rColors[d]; ctx.shadowColor = rColors[d]; ctx.shadowBlur = 3;
+      // Color shifts organically from green to burning red as HP drops
+      const rR = Math.round(0 + (255 - 0) * frac);
+      const rG = Math.round(255 + (23 - 255) * frac);
+      const rB = Math.round(178 + (68 - 178) * frac);
+      const dColor = `rgb(${rR},${rG},${rB})`;
+
+      ctx.fillStyle = dColor; ctx.shadowColor = dColor; ctx.shadowBlur = 3;
       ctx.fillRect(W - 2, ry - 1, 2, 2);
       ctx.shadowBlur = 0;
     } else {
-      ctx.fillStyle = 'rgba(0,255,178,0.35)'; ctx.fillRect(W - 2, Math.round(mid - 7), 2, 1);
-      ctx.fillStyle = 'rgba(255,23,68,0.45)'; ctx.fillRect(W - 2, Math.round(mid + 7), 2, 1);
+      ctx.fillStyle = 'rgba(0,255,178,0.85)'; ctx.fillRect(W - 2, mid, 2, 2);
+      const ry = mid + (Math.random() - 0.5) * H;
+      ctx.fillStyle = 'rgba(255,23,68,0.65)'; ctx.fillRect(W - 2, ry, 2, Math.random() * 4);
     }
 
     frameRef.current = requestAnimationFrame(draw);
-  }, [turnIdx, crashed]);
+  }, [crashed]);
 
   useEffect(() => {
     const c = canvasRef.current;
@@ -714,11 +734,11 @@ function GeneralSprite({ decay, attacking, hit }) {
       <rect x="0.5" y="21" width="3.5" height="2" fill="#D6B88C"/>
       <rect x="16" y="21" width="3.5" height="2" fill="#D6B88C"/>
 
-      {/* Belt */}
-      <rect x="3" y="22" width="14" height="2" fill="#111"/>
-      <rect x="8" y="21.5" width="4" height="3" fill="url(#gGold)"/>
-      <rect x="8.5" y="22" width="3" height="2" fill="#222"/> {/* Buckle hole */}
-      <rect x="9" y="22" width="1" height="2" fill="url(#gGold)"/>
+      {/* Back Half-Belt */}
+      <rect x="4" y="22" width="12" height="2" fill="#2A3515" />
+      <rect x="4" y="21.5" width="1" height="3" fill="#111" /> {/* Belt loop left */}
+      <rect x="15" y="21.5" width="1" height="3" fill="#111" /> {/* Belt loop right */}
+      <rect x="9" y="22" width="2" height="2" fill="#111" /> {/* Center stitching shadow */}
 
       {/* Legs & High-Poly Boots */}
       <rect x="4" y="24" width="5" height="2" fill="#1C2410"/>
@@ -841,6 +861,7 @@ export default function App() {
   const [usedMoves,     setUsedMoves]     = useState([]);
   const [moveRound,     setMoveRound]     = useState(0);
   const [nordenHp,      setNordenHp]      = useState(100);
+  const [generalHp,     setGeneralHp]     = useState(100);
   const [isInBattle,    setIsInBattle]    = useState(false);
   const [score,         setScore]         = useState({ general: 0, norden: 0 });
   const [attacking,     setAttacking]     = useState(false);
@@ -857,6 +878,11 @@ export default function App() {
   const [displayReq,    setDisplayReq]    = useState({ key: 0, speaker: '', text: '' });
   const [typedText,     setTypedText]     = useState('');
   const [typeComplete,  setTypeComplete]  = useState(false);
+
+  // ── Audio Triggers ───────────────────────────────────────────────────────
+  useEffect(() => {
+    if (crashed) triggerDivergenceAudio();
+  }, [crashed]);
 
   // ── Refs ─────────────────────────────────────────────────────────────────
   const startTime      = useRef(null);
@@ -902,6 +928,7 @@ export default function App() {
       i++;
       if (i <= displayReq.text.length) {
         setTypedText(displayReq.text.slice(0, i));
+        if (i % 2 === 0) playDialogueBlip();
       } else {
         setTypeComplete(true);
         clearInterval(iv);
@@ -973,11 +1000,11 @@ export default function App() {
 
     // Apply damage to Norden's HP
     actualDmg = won ? actualDmg : Math.floor(actualDmg * 0.4); // deflected hits do 40% damage
-    setNordenHp(prev => Math.max(0, prev - actualDmg));
+    setNordenHp(prev => Math.max(1, prev - actualDmg));
 
     const r        = moveRound;
     const genLine  = GENERAL_MOVE_LINES[move.slot][r % GENERAL_MOVE_LINES[move.slot].length];
-    const counter  = NORDEN_COUNTERS[move.slot][r % NORDEN_COUNTERS[move.slot].length];
+    const counter  = won ? NORDEN_COUNTERS[move.slot].hit : NORDEN_COUNTERS[move.slot].deflect;
 
     let resultTx;
     if (won) {
@@ -1000,6 +1027,7 @@ export default function App() {
       // T+900: Impact on Norden
       { delay: 900,   fn: () => {
         setAttacking(false);
+        if (won) { isCrit ? playCritSound() : playAttackSound(); } else { playAttackSound(); }
         spawnFloatingText(won ? (isCrit ? `CRIT! ${actualDmg}` : `${actualDmg} DMG`) : `DEFLECT: ${actualDmg}`,
           won ? (isCrit ? 'dmg-crit' : 'dmg-hit') : 'dmg-deflect', 'norden');
         
@@ -1012,12 +1040,13 @@ export default function App() {
       // After reading General's line: Norden counter-attack callout
       { delay: gWait, fn: () => { showText('BATTLE', counter.callout); } },
       // T+800: Norden lunges
-      { delay: 800,   fn: () => setNordenAttack(true) },
+      { delay: 800,   fn: () => { setNordenAttack(true); playCounterSound(); } },
       // T+600: Impact on General
       { delay: 600,   fn: () => {
         setNordenAttack(false); setGeneralHit(true); setNImpact(true);
-        // Fixed counter-damage text mapping for General getting hit by reality
-        spawnFloatingText(won ? 'COUNTER: 12' : `COUNTER: 22`, 'dmg-deflect', 'general');
+        const cDmg = won ? 12 : 22;
+        setGeneralHp(prev => Math.max(1, prev - cDmg));
+        spawnFloatingText(won ? `COUNTER: ${cDmg}` : `COUNTER: ${cDmg}`, 'dmg-deflect', 'general');
         
         setTimeout(() => { setGeneralHit(false); }, 450);
         setTimeout(() => setNImpact(false), 550);
@@ -1042,10 +1071,10 @@ export default function App() {
 
   // ── Derived values ────────────────────────────────────────────────────────
   const ti        = Math.min(turnIdx, 5);
-  const generalHp = GENERAL_HP[ti];
+  const generalDisp = Math.max(1, generalHp);
   // Norden's displayed HP: lower of base decay OR player-inflicted damage
   const nordenBaseHp = NORDEN_BASE[ti];
-  const nordenDisp   = Math.min(nordenBaseHp, nordenHp);
+  const nordenDisp   = Math.max(1, Math.min(nordenBaseHp, nordenHp));
   const remaining    = Math.max(0, TOTAL - elapsed);
 
   const iBlur = turnIdx >= 3 ? `blur(${(turnIdx - 2) * 0.25}px)` : 'none';
@@ -1079,7 +1108,12 @@ export default function App() {
         .norden-idle { animation: nordenBlink 5.2s step-end infinite; }
       `}</style>
       
-      {!gameStarted && <StartScreen onStart={() => setGameStarted(true)} />}
+      {!gameStarted && <StartScreen onStart={() => {
+        initAudio();
+        startBackgroundAmbience();
+        startTelemetryBeacon();
+        setGameStarted(true);
+      }} />}
 
       {gameStarted && crashed && bricked && <GameOverScreen score={score} />}
 
@@ -1143,7 +1177,7 @@ export default function App() {
 
             {/* ── General info card — bottom right ── */}
             <div className="info-card-pos-player">
-              <InfoCard name="GENERAL" hp={generalHp} maxHp={100}
+              <InfoCard name="GENERAL" hp={generalDisp} maxHp={100}
                 level="7" sub="COMMAND INTEGRITY" isEnemy={false} />
             </div>
 
@@ -1152,7 +1186,7 @@ export default function App() {
           </div>
 
           {/* ═══ DIVERGENCE GRAPH ════════════════════════════════════════ */}
-          <DivergenceGraph turnIdx={turnIdx} crashed={crashed} />
+          <DivergenceGraph turnIdx={turnIdx} elapsed={elapsed} crashed={crashed} />
 
           {/* ═══ BATTLE UI ═══════════════════════════════════════════════ */}
           <div className="battle-ui">

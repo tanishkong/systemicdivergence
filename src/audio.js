@@ -1,0 +1,187 @@
+let ctx = null;
+let humOsc = null;
+let humFilter = null;
+let staticNode = null;
+let staticFilter = null;
+let pulseOsc = null;
+
+export function initAudio() {
+  if (ctx) return;
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  ctx = new AudioContext();
+}
+
+export function startBackgroundAmbience() {
+  if (!ctx || humOsc) return;
+  
+  // 1. Deep Mechanical Hum (45Hz Sine)
+  humOsc = ctx.createOscillator();
+  humOsc.type = 'sine';
+  humOsc.frequency.setValueAtTime(45, ctx.currentTime);
+  
+  humFilter = ctx.createBiquadFilter();
+  humFilter.type = 'lowpass';
+  humFilter.frequency.value = 150;
+  
+  const humGain = ctx.createGain();
+  humGain.gain.value = 0.6;
+  
+  humOsc.connect(humFilter);
+  humFilter.connect(humGain);
+  humGain.connect(ctx.destination);
+  humOsc.start();
+
+  // 2. 1950s Radio Static (White Noise through bandpass)
+  const bufferSize = ctx.sampleRate * 2;
+  const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const output = noiseBuffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    output[i] = Math.random() * 2 - 1;
+  }
+  
+  staticNode = ctx.createBufferSource();
+  staticNode.buffer = noiseBuffer;
+  staticNode.loop = true;
+  
+  staticFilter = ctx.createBiquadFilter();
+  staticFilter.type = 'bandpass';
+  staticFilter.frequency.value = 800; // mid-range static
+  staticFilter.Q.value = 0.5;
+  
+  const staticGain = ctx.createGain();
+  staticGain.gain.value = 0.04; // Very subtle
+  
+  staticNode.connect(staticFilter);
+  staticFilter.connect(staticGain);
+  staticGain.connect(ctx.destination);
+  staticNode.start();
+}
+
+export function startTelemetryBeacon() {
+  if (!ctx || pulseOsc) return;
+  
+  // 0.5 Hz LFO modulating a low Square Wave volume
+  pulseOsc = ctx.createOscillator();
+  pulseOsc.type = 'square';
+  pulseOsc.frequency.value = 800; // beacon tone
+  
+  const pulseFilter = ctx.createBiquadFilter();
+  pulseFilter.type = 'bandpass';
+  pulseFilter.frequency.value = 1200;
+  
+  const lfo = ctx.createOscillator();
+  lfo.type = 'sine';
+  lfo.frequency.value = 0.3; // 0.3 times a second pulse
+  
+  const lfoGain = ctx.createGain();
+  lfoGain.gain.value = 0.03; // Pulse amplitude
+  
+  const mainGain = ctx.createGain();
+  mainGain.gain.value = 0; // Base amplitude 0
+  
+  lfo.connect(lfoGain);
+  lfoGain.connect(mainGain.gain); // Modulate gain
+  
+  pulseOsc.connect(pulseFilter);
+  pulseFilter.connect(mainGain);
+  mainGain.connect(ctx.destination);
+  
+  pulseOsc.start();
+  lfo.start();
+}
+
+// Drops hum pitch and distorts static for end-of-game divergence
+export function triggerDivergenceAudio() {
+  if (!ctx || !humOsc) return;
+  // Slowly collapse the frequencies
+  humOsc.frequency.exponentialRampToValueAtTime(10, ctx.currentTime + 4);
+  staticFilter.frequency.exponentialRampToValueAtTime(3000, ctx.currentTime + 3);
+  staticFilter.Q.value = 5; // harsh ringing
+}
+
+export function playDialogueBlip() {
+  if (!ctx || ctx.state !== 'running') return;
+  const osc = ctx.createOscillator();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(500 + Math.random() * 80, ctx.currentTime);
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.02, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04); // sharp 40ms blip
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.05);
+}
+
+// Attack sound: White noise burst + pitch sweep down
+export function playAttackSound() {
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(600, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.2);
+  
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.15, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+  
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.21);
+}
+
+// Crit sound: higher pitch sweep, aggressive
+export function playCritSound() {
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(1200, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.3);
+  
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.2, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+  
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.31);
+}
+
+// Norden counter: deep thud / low freq crunch
+export function playCounterSound() {
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(150, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.3);
+  
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.4, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+  
+  // Create distortion curve
+  const dist = ctx.createWaveShaper();
+  dist.curve = makeDistortionCurve(60);
+  dist.oversample = '4x';
+  
+  osc.connect(dist);
+  dist.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.31);
+}
+
+// Helper for crunch
+function makeDistortionCurve(amount) {
+  const k = amount;
+  const n_samples = 44100;
+  const curve = new Float32Array(n_samples);
+  const deg = Math.PI / 180;
+  for (let i = 0; i < n_samples; ++i) {
+    const x = i * 2 / n_samples - 1;
+    curve[i] = ( 3 + k ) * x * 20 * deg / ( Math.PI + k * Math.abs(x) );
+  }
+  return curve;
+}

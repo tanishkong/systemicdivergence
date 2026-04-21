@@ -141,13 +141,13 @@ html, body, #root {
 /* General — close-up perspective dominating the foreground */
 .unit-player {
   left: 9%;
-  bottom: 21%; /* Shifted down */
-  transform: scale(1.15); /* Boost scale slightly for severe perspective */
+  bottom: 12%; /* Shifted down to accommodate near platform coordinate shift */
+  transform: scale(0.96); /* Scaled down slightly so the hat does not clip */
 }
 
 /* ─── INFO CARDS ──────────────────────────────────────────── */
 /* Repositioned closer to the individual sprites */
-.info-card-pos-enemy  { position: absolute; bottom: 80%; right: 35%; z-index: 5; }
+.info-card-pos-enemy  { position: absolute; bottom: 62%; right: 4%; z-index: 5; }
 .info-card-pos-player { position: absolute; bottom: 42%; left: 32%; z-index: 5; }
 
 .info-card {
@@ -199,7 +199,7 @@ html, body, #root {
 
 /* ─── DIVERGENCE GRAPH STRIP ──────────────────────────────── */
 .div-strip {
-  flex: 0 0 80px;
+  flex: 0 0 110px;
   background: #020401;
   border-top:    1px solid rgba(0,255,178,0.1);
   border-bottom: 1px solid rgba(0,255,178,0.08);
@@ -209,9 +209,9 @@ html, body, #root {
   display: flex; justify-content: space-between; align-items: center;
   padding: 3px 10px 1px; flex-shrink: 0;
 }
-.div-title { font-family: var(--font-vt); font-size: 0.62rem; color: rgba(0,255,178,0.35); letter-spacing: 0.12em; }
+.div-title { font-family: var(--font-vt); font-size: 0.9rem; color: rgba(0,255,178,0.35); letter-spacing: 0.12em; }
 .div-legend { display: flex; gap: 1rem; }
-.div-leg-item { font-family: var(--font-vt); font-size: 0.6rem; letter-spacing: 0.04em; }
+.div-leg-item { font-family: var(--font-vt); font-size: 0.9rem; letter-spacing: 0.04em; }
 .div-canvas-wrap { flex: 1; position: relative; overflow: hidden; }
 .div-canvas { display: block; width: 100%; height: 100%; }
 .div-midline {
@@ -222,8 +222,8 @@ html, body, #root {
   display: flex; justify-content: space-between; align-items: center;
   padding: 1px 10px 3px; flex-shrink: 0;
 }
-.div-desc { font-family: var(--font-vt); font-size: 0.6rem; color: #1e1e1e; font-style: italic; }
-.div-pct  { font-family: var(--font-vt); font-size: 0.68rem; letter-spacing: 0.1em; }
+.div-desc { font-family: var(--font-vt); font-size: 0.82rem; color: #AAAAAA; font-style: italic; }
+.div-pct  { font-family: var(--font-vt); font-size: 1.0rem; letter-spacing: 0.1em; }
 
 /* ─── BATTLE UI PANEL ─────────────────────────────────────── */
 .battle-ui {
